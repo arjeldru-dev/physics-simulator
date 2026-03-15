@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>OpticSpace | Advanced Optics Simulator</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#06B6D4",
+                        "background-light": "#f5f6f8",
+                        "background-dark": "#0D0D0F",
+                        "surface": "#141417",
+                        "border-muted": "#2A2A2D"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .dot-grid {
+            background-image: radial-gradient(#2A2A2D 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        /* Custom ranges */
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 12px; width: 12px;
+            border-radius: 50%;
+            background: #06B6D4;
+            cursor: pointer;
+            margin-top: -4px;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px;
+            cursor: pointer;
+            background: #2A2A2D;
+            border-radius: 2px;
+        }
+        /* Color input */
+        input[type="color"] {
+            -webkit-appearance: none;
+            appearance: none;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            padding: 0;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
+
+        /* Active classes */
+        .active-btn { border-color: #06B6D4 !important; color: #06B6D4 !important; background-color: #141A1F !important; box-shadow: inset 0 0 12px rgba(6,182,212,0.1) !important; }
+        .active-btn .material-symbols-outlined { color: #06B6D4 !important; }
+        .active-pill { background-color: #06B6D4 !important; color: white !important; box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important; }
+
+            #mirror-tooltip {
+                position: absolute;
+                pointer-events: none;
+                z-index: 50;
+                background: rgba(20, 20, 23, 0.95);
+                border: 1px solid #2A2A2D;
+                backdrop-filter: blur(8px);
+                padding: 12px;
+                border-radius: 8px;
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+                color: #e2e8f0;
+                font-size: 11px;
+                transform: translate(15px, 15px);
+                opacity: 0;
+                transition: opacity 0.15s ease-in-out;
+                min-width: 200px;
+            }
+            #mirror-tooltip.visible { opacity: 1; }
+            .tt-value { font-family: 'ui-monospace', 'SFMono-Regular', Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; color: #06B6D4; }
+
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased overflow-hidden h-screen flex flex-col">
+
+<!-- Top Navigation -->
+<header class="h-[56px] border-b border-border-muted bg-surface flex items-center justify-between px-4 z-20 shrink-0">
+    <div class="flex items-center gap-3">
+        <div class="flex items-center justify-center size-8 bg-primary/10 rounded">
+            <span class="material-symbols-outlined text-primary text-xl">architecture</span>
+        </div>
+        <h1 class="text-[#FAFAFA] text-lg font-bold tracking-tight">OpticSpace</h1>
+    </div>
+    <nav class="flex items-center gap-1 bg-background-dark/50 p-1 rounded-lg border border-border-muted">
+        <button id="moveLightBtn" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-white hover:bg-[#2A2A2D] transition-colors rounded group mode-btn">
+            <span class="material-symbols-outlined text-sm">light_mode</span> Move Light
+        </button>
+        <button id="moveObjBtn" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-white hover:bg-[#2A2A2D] transition-colors rounded group mode-btn">
+            <span class="material-symbols-outlined text-sm">open_with</span> Move Object
+        </button>
+            <button id="toggleTwoSidedBtn" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-white hover:bg-[#2A2A2D] transition-colors rounded group mode-btn">
+                <span class="material-symbols-outlined text-sm">flip</span> Toggle 2-Sided
+            </button>
+    </nav>
+    <div class="flex items-center gap-3">
+        <button id="clearBtn" class="px-4 py-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors rounded-lg bg-surface border border-border-muted hover:bg-border-muted">
+            Clear Canvas
+        </button>
+    </div>
+</header>
+
+<div class="flex flex-1 overflow-hidden relative">
+    <!-- Left Sidebar -->
+    <aside class="w-[280px] bg-surface border-r border-border-muted flex flex-col overflow-y-auto z-10 shrink-0 select-none">
+        
+        <!-- Section: Light Source -->
+        <div class="p-4 border-b border-border-muted">
+            <div class="flex items-center gap-2 mb-4">
+                <span class="material-symbols-outlined text-primary text-lg">lightbulb</span>
+                <h3 class="text-[10px] font-bold tracking-widest text-slate-500 uppercase">Light Source</h3>
+            </div>
+            
+            <div class="flex items-center justify-between mb-3 border-b border-border-muted/50 pb-3">
+                <select id="lightSelect" class="bg-background-dark border border-border-muted text-[11px] font-bold text-primary rounded px-2 py-1 outline-none w-28 cursor-pointer">
+                </select>
+                <div class="flex gap-1 items-center">
+                    <button id="delLightBtn" class="flex items-center gap-1 text-[10px] bg-border-muted hover:bg-slate-600 text-white px-2 py-1 rounded transition-colors" title="Delete current light">
+                        <span class="material-symbols-outlined text-[12px]">delete</span> Delete
+                    </button>
+                    <button id="addLightBtn" class="flex items-center gap-1 text-[10px] bg-border-muted hover:bg-slate-600 text-white px-2 py-1 rounded transition-colors">
+                        <span class="material-symbols-outlined text-[12px]">add</span> Add Light
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex bg-background-dark p-1 rounded mb-4 border border-border-muted">
+                <button id="pointLightBtn" class="flex-1 py-1 text-[11px] font-semibold text-slate-500 rounded transition-colors active-pill">Point</button>
+                <button id="laserBtn" class="flex-1 py-1 text-[11px] font-semibold text-slate-500 rounded transition-colors">Laser</button>
+            </div>
+
+            <div id="laserControlsWrapper" class="space-y-4 hidden">
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label class="text-[11px] font-medium text-slate-400">Rays</label>
+                        <span id="raysVal" class="text-[11px] font-mono text-primary bg-primary/10 px-1.5 py-0.5 rounded">1</span>
+                    </div>
+                    <input type="range" id="raysSlider" min="1" max="20" value="1">
+                </div>
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label class="text-[11px] font-medium text-slate-400">Spread</label>
+                        <span id="spreadVal" class="text-[11px] font-mono text-primary bg-primary/10 px-1.5 py-0.5 rounded">5&deg;</span>
+                    </div>
+                    <input type="range" id="spreadSlider" min="1" max="90" value="5">
+                </div>
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label class="text-[11px] font-medium text-slate-400">Aim</label>
+                    </div>
+                    <input type="range" id="aimSlider" min="0" max="360" value="0">
+                </div>
+            </div>
+
+            <div class="mt-4 flex justify-between items-center">
+                <label class="text-[11px] font-medium text-slate-400">Beam Color</label>
+                <div class="ring-2 ring-primary/20 rounded-full flex items-center justify-center p-0.5">
+                    <input type="color" id="lightColor" value="#FFFFFF">
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Optical Elements -->
+        <div class="p-4 border-b border-border-muted">
+            <div class="flex items-center gap-2 mb-4">
+                <span class="material-symbols-outlined text-primary text-lg">category</span>
+                <h3 class="text-[10px] font-bold tracking-widest text-slate-500 uppercase">Optical Elements</h3>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <button id="flatBtn" class="mode-btn flex flex-col items-center justify-center p-3 border rounded-lg group transition-all bg-background-dark border-border-muted hover:border-slate-600 text-slate-400 active-btn">
+                    <span class="material-symbols-outlined mb-1 transition-colors">remove</span>
+                    <span class="text-[10px] font-medium transition-colors">Flat Mirror</span>
+                </button>
+                <button id="concaveBtn" class="mode-btn flex flex-col items-center justify-center p-3 border rounded-lg group transition-all bg-background-dark border-border-muted hover:border-slate-600 text-slate-400">
+                    <span class="material-symbols-outlined mb-1 transition-colors">circle</span>
+                    <span class="text-[10px] font-medium transition-colors">Concave</span>
+                </button>
+                <button id="convexBtn" class="mode-btn flex flex-col items-center justify-center p-3 border rounded-lg group transition-all bg-background-dark border-border-muted hover:border-slate-600 text-slate-400">
+                    <span class="material-symbols-outlined mb-1 transition-colors">blur_circular</span>
+                    <span class="text-[10px] font-medium transition-colors">Convex</span>
+                </button>
+                <button id="freehandBtn" class="mode-btn flex flex-col items-center justify-center p-3 border rounded-lg group transition-all bg-background-dark border-border-muted hover:border-slate-600 text-slate-400">
+                    <span class="material-symbols-outlined mb-1 transition-colors">gesture</span>
+                    <span class="text-[10px] font-medium transition-colors">Freehand</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Section: Render Settings -->
+        <div class="p-4 pb-8">
+            <div class="flex items-center gap-2 mb-4">
+                <span class="material-symbols-outlined text-primary text-lg">settings_suggest</span>
+                <h3 class="text-[10px] font-bold tracking-widest text-slate-500 uppercase">Render Settings</h3>
+            </div>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] text-slate-400">Show Normals</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="normalsToggle" class="sr-only peer">
+                        <div class="w-8 h-4 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-primary"></div>
+                    </label>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] text-slate-400">Diffuse Reflection</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="diffuseToggle" class="sr-only peer">
+                        <div class="w-8 h-4 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-primary"></div>
+                    </label>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] text-slate-400">Huygens Wavelets</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="huygensToggle" class="sr-only peer">
+                        <div class="w-8 h-4 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-primary"></div>
+                    </label>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] text-slate-400">Virtual Image</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="virtImgToggle" class="sr-only peer">
+                        <div class="w-8 h-4 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-primary"></div>
+                    </label>
+                </div>
+                
+                <div class="space-y-2 pt-2">
+                    <div class="flex justify-between items-center">
+                        <label class="text-[11px] font-medium text-slate-400">Max Bounces</label>
+                        <span id="bouncesVal" class="text-[11px] font-mono text-slate-500">8</span>
+                    </div>
+                    <input type="range" id="bouncesSlider" min="1" max="15" value="8">
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Canvas -->
+    <main class="flex-1 relative bg-background-dark dot-grid overflow-hidden">
+        <canvas id="simCanvas" class="absolute inset-0 z-0 cursor-crosshair"></canvas>
+        <div id="mirror-tooltip">
+            <div class="flex items-center gap-2 mb-2 pb-2 border-b border-border-muted">
+                <span class="material-symbols-outlined text-[14px] text-primary" id="tt-icon">category</span>
+                <span class="font-bold tracking-wide uppercase text-[10px] text-slate-300" id="tt-type">Flat Mirror</span>
+            </div>
+            <div class="space-y-1.5" id="tt-content">
+                <!-- Data injected here -->
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            if(container) {
+                canvas.width = container.clientWidth;
+                canvas.height = container.clientHeight;
+            }
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        let mirrors = [];
+        let mirrorIdCounter = 0;
+        let lightIdCounter = 0;
+        let activeLightId = null;
+        let lights = [];
+        
+        // UI State
+        let drawMode = 'flat'; // flat, concave, convex, prism, moveLight
+        let showNormals = false;
+        let diffuseRefl = false;
+        let showHuygens = false;
+        let showVirtImage = false;
+        let maxBounces = 8;
+
+        let drawingStart = null;
+        let drawingEnd = null;
+        let currentPath = null;
+        let hoveredId = null;
+        let hoveredRotationHandle = null;
+        
+        let isMovingObj = false;
+        let isRotatingObj = false;
+        let movingObjId = null;
+        let lastMousePos = null;
+
+        let timeOffset = 0; // For Huygens animation
+
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : {r: 255, g: 255, b: 255};
+        }
+
+        // DOM Listeners
+        const modes = ['flat', 'concave', 'convex', 'prism', 'freehand', 'moveLight', 'moveObj', 'toggleTwoSided'];
+        function setDrawMode(m) {
+            drawMode = m;
+            document.querySelectorAll('.mode-btn, #moveLightBtn, #moveObjBtn, #toggleTwoSidedBtn').forEach(b => b.classList.remove('active-btn'));
+            document.getElementById(m+'Btn').classList.add('active-btn');
+        }
+
+        document.getElementById('flatBtn').onclick = () => setDrawMode('flat');
+        document.getElementById('concaveBtn').onclick = () => setDrawMode('concave');
+        document.getElementById('convexBtn').onclick = () => setDrawMode('convex');
+        // document.getElementById('prismBtn').onclick = () => setDrawMode('prism');
+        document.getElementById('freehandBtn').onclick = () => setDrawMode('freehand');
+        document.getElementById('moveObjBtn').onclick = () => setDrawMode('moveObj');
+        document.getElementById('moveLightBtn').onclick = () => setDrawMode('moveLight');
+        document.getElementById('toggleTwoSidedBtn').onclick = () => setDrawMode('toggleTwoSided');
+
+        function updateLightUI() {
+            const select = document.getElementById('lightSelect');
+            if (select) {
+                select.innerHTML = '';
+                if (lights.length === 0) {
+                    const opt = document.createElement('option');
+                    opt.value = "";
+                    opt.innerText = 'No Lights placed';
+                    select.appendChild(opt);
+                } else {
+                    for (let i = 0; i < lights.length; i++) {
+                        const opt = document.createElement('option');
+                        opt.value = lights[i].id;
+                        opt.innerText = 'Light ' + lights[i].id;
+                        if (lights[i].id === activeLightId) opt.selected = true;
+                        select.appendChild(opt);
+                    }
+                }
+            }
+            
+            const l = lights.find(l => l.id === activeLightId);
+            if (!l) {
+                // Disable UI if no lights
+                document.getElementById('pointLightBtn').classList.remove('active-pill');
+                document.getElementById('laserBtn').classList.remove('active-pill');
+                document.getElementById('laserControlsWrapper').classList.add('hidden');
+                document.getElementById('raysVal').innerText = '1';
+                document.getElementById('spreadVal').innerText = '5°';
+                return;
+            }
+            
+            if (l.mode === 'point') {
+                document.getElementById('pointLightBtn').classList.add('active-pill');
+                document.getElementById('laserBtn').classList.remove('active-pill');
+                document.getElementById('laserControlsWrapper').classList.add('hidden');
+            } else {
+                document.getElementById('laserBtn').classList.add('active-pill');
+                document.getElementById('pointLightBtn').classList.remove('active-pill');
+                document.getElementById('laserControlsWrapper').classList.remove('hidden');
+            }
+            document.getElementById('raysSlider').value = l.rays;
+            document.getElementById('raysVal').innerText = l.rays;
+            document.getElementById('spreadSlider').value = l.spread;
+            document.getElementById('spreadVal').innerText = l.spread + '°';
+            document.getElementById('aimSlider').value = l.aim;
+            document.getElementById('lightColor').value = l.color;
+        }
+
+        const addLightBtn = document.getElementById('addLightBtn');
+        if (addLightBtn) {
+            addLightBtn.onclick = () => {
+                lightIdCounter++;
+                const newLight = { id: lightIdCounter, x: window.innerWidth/4 + Math.random()*50, y: window.innerHeight/2 + Math.random()*50, mode: 'point', rays: 1, spread: 5, aim: 0, color: '#FFFFFF', colorRgb: {r: 255, g: 255, b: 255} };
+                lights.push(newLight);
+                activeLightId = newLight.id;
+                updateLightUI();
+            };
+        }
+
+        const delLightBtn = document.getElementById('delLightBtn');
+        if (delLightBtn) {
+            delLightBtn.onclick = () => {
+                if (lights.length > 0) {
+                    lights = lights.filter(l => l.id !== activeLightId);
+                    if (lights.length > 0) {
+                        activeLightId = lights[0].id;
+                    } else {
+                        activeLightId = null;
+                    }
+                    updateLightUI();
+                }
+            };
+        }
+
+        document.getElementById('pointLightBtn').onclick = () => {
+            const l = lights.find(l => l.id === activeLightId);
+            if(l) { l.mode = 'point'; updateLightUI(); }
+        };
+        document.getElementById('laserBtn').onclick = () => {
+            const l = lights.find(l => l.id === activeLightId);
+            if(l) { l.mode = 'laser'; updateLightUI(); }
+        };
+
+        document.getElementById('raysSlider').oninput = e => { const l = lights.find(l => l.id === activeLightId); if(l) { l.rays = parseInt(e.target.value); document.getElementById('raysVal').innerText = l.rays; } };
+        document.getElementById('spreadSlider').oninput = e => { const l = lights.find(l => l.id === activeLightId); if(l) { l.spread = parseInt(e.target.value); document.getElementById('spreadVal').innerText = l.spread + '°'; } };
+        document.getElementById('aimSlider').oninput = e => { const l = lights.find(l => l.id === activeLightId); if(l) l.aim = parseInt(e.target.value); };
+
+        const lightSelect = document.getElementById('lightSelect');
+        if (lightSelect) {
+            lightSelect.addEventListener('change', (e) => {
+                activeLightId = parseInt(e.target.value);
+                updateLightUI();
+            });
+        }
+        // Initialize UI safely on load bounds
+        updateLightUI();
+
+        document.getElementById('normalsToggle').onchange = e => showNormals = e.target.checked;
+        document.getElementById('diffuseToggle').onchange = e => diffuseRefl = e.target.checked;
+        document.getElementById('huygensToggle').onchange = e => showHuygens = e.target.checked;
+        document.getElementById('virtImgToggle').onchange = e => showVirtImage = e.target.checked;
+
+        document.getElementById('bouncesSlider').oninput = e => { maxBounces = parseInt(e.target.value); document.getElementById('bouncesVal').innerText = maxBounces; };
+
+        document.getElementById('lightColor').oninput = e => { const l = lights.find(l => l.id === activeLightId); if(l) { l.color = e.target.value; l.colorRgb = hexToRgb(l.color); } };
+        document.getElementById('clearBtn').onclick = () => { mirrors = []; lights = [{ id: 1, x: window.innerWidth / 2, y: window.innerHeight / 2, mode: 'point', rays: 1, spread: 5, aim: 0, color: '#FFFFFF', colorRgb: {r: 255, g: 255, b: 255} }]; activeLightId = 1; updateLightUI(); };
+
+        // Interaction
+        canvas.addEventListener('mousedown', e => {
+            if (e.target !== canvas) return;
+            const mouseX = e.offsetX; const mouseY = e.offsetY;
+            
+            if (drawMode === 'moveLight') {
+                let clickedLight = null;
+                for (const l of lights) {
+                    if (Math.hypot(mouseX - l.x, mouseY - l.y) < 15) {
+                        clickedLight = l;
+                        break;
+                    }
+                }
+                if (clickedLight) {
+                    activeLightId = clickedLight.id;
+                    updateLightUI();
+                } else {
+                    const l = lights.find(l => l.id === activeLightId);
+                    if (l) { l.x = mouseX; l.y = mouseY; }
+                }
+            } else if (drawMode === 'moveObj') {
+                if (hoveredRotationHandle !== null) {
+                    isRotatingObj = true;
+                    movingObjId = hoveredRotationHandle;
+                    lastMousePos = {x: mouseX, y: mouseY};
+                } else if (hoveredId !== null) {
+                    isMovingObj = true;
+                    movingObjId = hoveredId;
+                    lastMousePos = {x: mouseX, y: mouseY};
+                }
+            } else if (drawMode === 'toggleTwoSided') {
+                if (hoveredId !== null) {
+                    const m = mirrors.find(m => m.id === hoveredId);
+                    if (m && m.type !== 'arc') {
+                        m.twoSided = !m.twoSided;
+                    }
+                }
+            } else if (drawMode === 'freehand') {
+                currentPath = [{x: mouseX, y: mouseY}];
+            } else {
+                drawingStart = {x: mouseX, y: mouseY};
+                drawingEnd = {x: mouseX, y: mouseY};
+            }
+        });
+
+        canvas.addEventListener('mousemove', e => {
+            const mouseX = e.offsetX; const mouseY = e.offsetY;
+            
+            // Highlight hover targets
+            hoveredId = null;
+            hoveredRotationHandle = null;
+            const tooltip = document.getElementById('mirror-tooltip');
+            
+            if (!isMovingObj && !isRotatingObj && !drawingStart && drawMode !== 'moveLight') {
+                const minDist = 15;
+                for (const m of mirrors) {
+                    // Check rotation handle first
+                    let hx, hy;
+                    if (m.type === 'flat') {
+                        hx = (m.x1 + m.x2) / 2; hy = (m.y1 + m.y2) / 2;
+                        const dx = m.x2 - m.x1; const dy = m.y2 - m.y1;
+                        const len = Math.hypot(dx, dy);
+                        hx += (-dy / len) * 20; hy += (dx / len) * 20;
+                    } else if (m.type === 'arc') {
+                        let midAng = getArcMidAng(m);
+                        const hr = m.concave ? m.r - 20 : m.r + 20;
+                        hx = m.cx + Math.cos(midAng) * hr;
+                        hy = m.cy + Math.sin(midAng) * hr;
+                    } else if (m.type === 'freehand') {
+                        let cx = 0, cy = 0;
+                        for (let pt of m.points) { cx += pt.x; cy += pt.y; }
+                        cx /= m.points.length; cy /= m.points.length;
+                        hx = cx; hy = cy - 30;
+                    }
+                    if (Math.hypot(mouseX - hx, mouseY - hy) < 12) {
+                        hoveredRotationHandle = m.id;
+                        break;
+                    }
+                    
+                    if (m.type === 'flat') {
+                        if (distToSegment(mouseX, mouseY, m.x1, m.y1, m.x2, m.y2) < minDist) hoveredId = m.id;
+                    } else if (m.type === 'arc') {
+                        const d = Math.hypot(mouseX-m.cx, mouseY-m.cy);
+                        if (Math.abs(d - m.r) < minDist) hoveredId = m.id;
+                    } else if (m.type === 'freehand') {
+                        for (let i = 0; i < m.points.length - 1; i++) {
+                            if (distToSegment(mouseX, mouseY, m.points[i].x, m.points[i].y, m.points[i+1].x, m.points[i+1].y) < minDist) {
+                                hoveredId = m.id;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Tooltip Update Logic
+            if (hoveredId !== null && !isMovingObj && !isRotatingObj) {
+                const m = mirrors.find(m => m.id === hoveredId);
+                if (m && tooltip) {
+                    tooltip.classList.add('visible');
+                    tooltip.style.left = e.offsetX + 'px';
+                    tooltip.style.top = e.offsetY + 'px';
+                    
+                    const iconEl = document.getElementById('tt-icon');
+                    const typeEl = document.getElementById('tt-type');
+                    const contentEl = document.getElementById('tt-content');
+                    
+                    if (contentEl) {
+                        let typeName = ''; let icon = ''; let dimText = '';
+                        if (m.type === 'flat') {
+                            typeName = 'Flat Mirror'; icon = 'remove';
+                            dimText = `Length: <span class="tt-value">${Math.round(Math.hypot(m.x2-m.x1, m.y2-m.y1))}px</span>`;
+                        } else if (m.type === 'arc') {
+                            typeName = m.concave ? 'Concave Mirror' : 'Convex Mirror'; icon = m.concave ? 'circle' : 'blur_circular';
+                            dimText = `Radius: <span class="tt-value">${Math.round(m.r)}px</span>`;
+                        } else if (m.type === 'freehand') {
+                            typeName = 'Freehand Mirror'; icon = 'gesture';
+                            let len = 0;
+                            for(let i=0; i<m.points.length-1; i++) len += Math.hypot(m.points[i+1].x-m.points[i].x, m.points[i+1].y-m.points[i].y);
+                            dimText = `Length: <span class="tt-value">${Math.round(len)}px</span>`;
+                        }
+                        
+                        if(iconEl) iconEl.innerText = icon; 
+                        if(typeEl) typeEl.innerText = typeName;
+                        
+                        let html = `<div class="flex justify-between"><span>${dimText}</span></div>`;
+                        if (m.type !== 'arc') html += `<div class="flex justify-between"><span>Sides:</span> <span class="tt-value">${m.twoSided ? 'Two-Sided' : 'One-Sided'}</span></div>`;
+                        
+                        let hitCount = m.hitCount || 0;
+                        if (hitCount > 0) {
+                            html += `<div class="mt-2 pt-2 border-t border-border-muted text-[#facc15] font-semibold flex items-center gap-1.5"><span class="material-symbols-outlined text-[12px]">bolt</span> Active (${hitCount} Rays)</div>`;
+                            if (showNormals) html += `<div class="text-slate-400 text-[10px]">&bull; Rendering Normal Vectors</div>`;
+                            if (diffuseRefl) html += `<div class="text-slate-400 text-[10px]">&bull; Scattering Light (Diffuse)</div>`;
+                            if (showVirtImage && m.type === 'flat') html += `<div class="text-slate-400 text-[10px]">&bull; Tracing Virtual Image</div>`;
+                            if (showHuygens) html += `<div class="text-slate-400 text-[10px]">&bull; Propagating Wavelets</div>`;
+                        } else {
+                            html += `<div class="mt-2 pt-2 border-t border-border-muted text-slate-500 font-medium flex items-center gap-1.5"><span class="material-symbols-outlined text-[12px]">bedtime</span> Inactive</div>`;
+                        }
+                        
+                        contentEl.innerHTML = html;
+                    }
+                }
+            } else if (tooltip) {
+                tooltip.classList.remove('visible');
+            }
+
+            if (drawMode === 'moveLight' && e.buttons === 1) {
+                const l = lights.find(l => l.id === activeLightId);
+                if (l) { l.x = mouseX; l.y = mouseY; }
+            } else if (isRotatingObj && e.buttons === 1) {
+                for (const m of mirrors) {
+                    if (m.id === movingObjId) {
+                        if (m.type === 'flat') {
+                            const cx = (m.x1 + m.x2) / 2; const cy = (m.y1 + m.y2) / 2;
+                            const startAng = Math.atan2(lastMousePos.y - cy, lastMousePos.x - cx);
+                            const endAng = Math.atan2(mouseY - cy, mouseX - cx);
+                            const dTheta = endAng - startAng;
+                            
+                            // Rotate ends about center
+                            const rotatePt = (px, py, cx, cy, th) => {
+                                const dx = px - cx; const dy = py - cy;
+                                return { x: cx + dx*Math.cos(th) - dy*Math.sin(th), y: cy + dx*Math.sin(th) + dy*Math.cos(th) };
+                            };
+                            const p1 = rotatePt(m.x1, m.y1, cx, cy, dTheta);
+                            const p2 = rotatePt(m.x2, m.y2, cx, cy, dTheta);
+                            m.x1 = p1.x; m.y1 = p1.y; m.x2 = p2.x; m.y2 = p2.y;
+                        } else if (m.type === 'arc') {
+                            const startAng = Math.atan2(lastMousePos.y - m.cy, lastMousePos.x - m.cx);
+                            const endAng = Math.atan2(mouseY - m.cy, mouseX - m.cx);
+                            const dTheta = endAng - startAng;
+                            m.a1 = (m.a1 + dTheta) % (2*Math.PI);
+                            m.a2 = (m.a2 + dTheta) % (2*Math.PI);
+                            if (m.a1 < 0) m.a1 += 2*Math.PI;
+                            if (m.a2 < 0) m.a2 += 2*Math.PI;
+                        } else if (m.type === 'freehand') {
+                            let cx = 0, cy = 0;
+                            for (let pt of m.points) { cx += pt.x; cy += pt.y; }
+                            cx /= m.points.length; cy /= m.points.length;
+                            const startAng = Math.atan2(lastMousePos.y - cy, lastMousePos.x - cx);
+                            const endAng = Math.atan2(mouseY - cy, mouseX - cx);
+                            const dTheta = endAng - startAng;
+                            const rotatePt = (px, py, cx, cy, th) => {
+                                const dx = px - cx; const dy = py - cy;
+                                return { x: cx + dx*Math.cos(th) - dy*Math.sin(th), y: cy + dx*Math.sin(th) + dy*Math.cos(th) };
+                            };
+                            for (let pt of m.points) {
+                                const rp = rotatePt(pt.x, pt.y, cx, cy, dTheta);
+                                pt.x = rp.x; pt.y = rp.y;
+                            }
+                        }
+                    }
+                }
+                lastMousePos = {x: mouseX, y: mouseY};
+            } else if (drawMode === 'freehand' && currentPath && e.buttons === 1) {
+                const dist = Math.hypot(currentPath[currentPath.length-1].x - mouseX, currentPath[currentPath.length-1].y - mouseY);
+                if (dist > 5) {
+                    currentPath.push({x: mouseX, y: mouseY});
+                }
+            } else if (isMovingObj && e.buttons === 1) {
+                const dx = mouseX - lastMousePos.x;
+                const dy = mouseY - lastMousePos.y;
+                for (const m of mirrors) {
+                    if (m.id === movingObjId) {
+                        if (m.type === 'flat') { m.x1 += dx; m.y1 += dy; m.x2 += dx; m.y2 += dy; }
+                        else if (m.type === 'arc') { m.cx += dx; m.cy += dy; }
+                        else if (m.type === 'freehand') { for (let pt of m.points) { pt.x += dx; pt.y += dy; } }
+                    }
+                }
+                lastMousePos = {x: mouseX, y: mouseY};
+            } else if (drawingStart && e.buttons === 1) {
+                drawingEnd = {x: mouseX, y: mouseY};
+            }
+        });
+
+        canvas.addEventListener('mouseup', e => {
+            if (currentPath) {
+                if (currentPath.length > 1) {
+                    mirrorIdCounter++;
+                    mirrors.push({
+                        id: mirrorIdCounter,
+                        type: 'freehand',
+                        points: currentPath,
+                        twoSided: false
+                    });
+                }
+                currentPath = null;
+            } else if (isRotatingObj) {
+                isRotatingObj = false;
+                movingObjId = null;
+                lastMousePos = null;
+            } else if (isMovingObj) {
+                isMovingObj = false;
+                movingObjId = null;
+                lastMousePos = null;
+            } else if (drawingStart && drawingEnd) {
+                if (Math.hypot(drawingEnd.x - drawingStart.x, drawingEnd.y - drawingStart.y) > 10) {
+                    mirrorIdCounter++;
+                    if (drawMode === 'flat') {
+                        mirrors.push({ id: mirrorIdCounter, type: 'flat', x1: drawingStart.x, y1: drawingStart.y, x2: drawingEnd.x, y2: drawingEnd.y, twoSided: false });
+                    } else if (drawMode === 'concave' || drawMode === 'convex') {
+                        // Create an arc
+                        const dx = drawingEnd.x - drawingStart.x;
+                        const dy = drawingEnd.y - drawingStart.y;
+                        const len = Math.hypot(dx, dy);
+                        // Radius proportional to length
+                        const r = len * 0.8; 
+                        const midX = (drawingStart.x + drawingEnd.x) / 2;
+                        const midY = (drawingStart.y + drawingEnd.y) / 2;
+                        // normal to line
+                        let nx = -dy / len;
+                        let ny = dx / len;
+                        
+                        // Bulge direction
+                        if (drawMode === 'convex') { nx = -nx; ny = -ny; }
+                        
+                        // Center of the circle
+                        const h = Math.sqrt(r*r - (len/2)*(len/2)); // distance from mid to center
+                        const cx = midX + nx * h;
+                        const cy = midY + ny * h;
+                        
+                        let a1 = Math.atan2(drawingStart.y - cy, drawingStart.x - cx);
+                        let a2 = Math.atan2(drawingEnd.y - cy, drawingEnd.x - cx);
+                        if (a1 < 0) a1 += 2*Math.PI;
+                        if (a2 < 0) a2 += 2*Math.PI;
+                        
+                        // Ensure a1 < a2 by swapping or adding 2PI
+                        let diff = a2 - a1;
+                        if (diff < 0) diff += 2*Math.PI;
+                        let midAngle = a1 + diff/2;
+                        
+                        mirrors.push({ id: mirrorIdCounter, type: 'arc', concave: drawMode==='concave', cx, cy, r, a1, a2, len });
+                    }
+                }
+                drawingStart = null; drawingEnd = null;
+            }
+        });
+
+        window.addEventListener('keydown', e => {
+            if ((e.key === 'Backspace' || e.key === 'Delete') && hoveredId !== null) {
+                mirrors = mirrors.filter(m => m.id !== hoveredId);
+                hoveredId = null;
+            }
+        });
+
+        function distToSegment(px, py, x1, y1, x2, y2) {
+            const l2 = Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2);
+            if (l2 === 0) return Math.hypot(px-x1, py-y1);
+            let t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2;
+            t = Math.max(0, Math.min(1, t));
+            return Math.hypot(px - (x1 + t * (x2 - x1)), py - (y1 + t * (y2 - y1)));
+        }
+
+        // Ray Math
+        function getLineIntersect(x1, y1, x2, y2, x3, y3, x4, y4) {
+            const den = ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1));
+            if (den === 0) return null;
+            const uA = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / den;
+            const uB = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / den;
+            if (uA > 0 && uB >= 0 && uB <= 1) {
+                return { x: x1 + uA*(x2-x1), y: y1 + uA*(y2-y1), dist: uA*Math.hypot(x2-x1, y2-y1) };
+            }
+            return null;
+        }
+
+        function getArcMidAng(m) {
+            let mina = Math.min(m.a1, m.a2); let maxa = Math.max(m.a1, m.a2);
+            let diff = maxa - mina;
+            if (diff > Math.PI) return maxa + (2*Math.PI - diff)/2;
+            return mina + diff/2;
+        }
+
+        function getArcIntersect(rx, ry, dx, dy, m) {
+            // Ray: P = R + t*D
+            // Circle: (x-cx)^2 + (y-cy)^2 = r^2
+            const fx = rx - m.cx; const fy = ry - m.cy;
+            const a = dx*dx + dy*dy;
+            const b = 2 * (fx*dx + fy*dy);
+            const c = fx*fx + fy*fy - m.r*m.r;
+            const det = b*b - 4*a*c;
+            if (det < 0) return null;
+            const t1 = (-b - Math.sqrt(det)) / (2*a);
+            const t2 = (-b + Math.sqrt(det)) / (2*a);
+            
+            // Find valid positive t that is on the bounded arc portion
+            let bestT = Infinity;
+            for (let t of [t1, t2]) {
+                if (t > 0.01) {
+                    const hitX = rx + dx*t; const hitY = ry + dy*t;
+                    let ang = Math.atan2(hitY - m.cy, hitX - m.cx);
+                    if (ang < 0) ang += 2*Math.PI;
+                    // Check if between a1 and a2 (considering wrap around)
+                    let inBody = false;
+                    let mina = Math.min(m.a1, m.a2); let maxa = Math.max(m.a1, m.a2);
+                    let diff = maxa - mina;
+                    if (diff > Math.PI) {
+                        if (ang >= maxa || ang <= mina) inBody = true;
+                    } else {
+                        if (ang >= mina && ang <= maxa) inBody = true;
+                    }
+                    if (inBody && t < bestT) bestT = t;
+                }
+            }
+            if (bestT !== Infinity && bestT > 0.01) {
+                return { x: rx + dx*bestT, y: ry + dy*bestT, dist: bestT * Math.hypot(dx,dy) };
+            }
+            return null;
+        }
+
+        function loop() {
+            timeOffset += 0.5;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Virtual Image for Flat Mirrors
+            if (showVirtImage) {
+                for (const m of mirrors) {
+                    if (m.type === 'flat') {
+                        for (const l of lights) {
+                            // Reflect light source across line
+                            const dx = m.x2 - m.x1; const dy = m.y2 - m.y1;
+                            const l2 = dx*dx + dy*dy;
+                            const t = ((l.x - m.x1)*dx + (l.y - m.y1)*dy) / l2;
+                            const px = m.x1 + t*dx; const py = m.y1 + t*dy;
+                            const vx = px + (px - l.x);
+                            const vy = py + (py - l.y);
+                            
+                            ctx.beginPath();
+                            ctx.strokeStyle = `rgba(${l.colorRgb.r}, ${l.colorRgb.g}, ${l.colorRgb.b}, 0.4)`;
+                            ctx.setLineDash([5, 5]);
+                            ctx.moveTo(l.x, l.y);
+                            ctx.lineTo(vx, vy);
+                            ctx.stroke();
+                            ctx.setLineDash([]);
+                            
+                            ctx.beginPath();
+                            ctx.fillStyle = l.color;
+                            ctx.arc(vx, vy, 4, 0, Math.PI*2);
+                            ctx.fill();
+                        }
+                    }
+                }
+            }
+
+            // Draw Mirrors
+            ctx.lineCap = 'round';
+            for (const m of mirrors) {
+                const isHoveredOrActive = m.id === hoveredId || (isMovingObj && movingObjId === m.id) || (isRotatingObj && movingObjId === m.id) || m.id === hoveredRotationHandle;
+                
+                if (m.hitCount > 0) {
+                    ctx.shadowColor = 'rgba(6, 182, 212, 0.6)';
+                    ctx.shadowBlur = 10;
+                } else {
+                    ctx.shadowBlur = 0;
+                }
+
+                ctx.beginPath();
+                ctx.strokeStyle = isHoveredOrActive ? '#F44' : (m.hitCount > 0 ? '#0ff' : '#FFF');
+                ctx.lineWidth = m.type === 'flat' ? 2 : 3;
+                if (m.type === 'flat') {
+                    ctx.moveTo(m.x1, m.y1); ctx.lineTo(m.x2, m.y2);
+                } else if (m.type === 'arc') {
+                    ctx.arc(m.cx, m.cy, m.r, m.a1, m.a2, (m.a2<m.a1 && m.a2-m.a1 > -Math.PI) ? true : false);
+                    // Draw F focal point
+                    let midAng = getArcMidAng(m);
+                    const fx = m.cx + Math.cos(midAng) * (m.r / 2);
+                    const fy = m.cy + Math.sin(midAng) * (m.r / 2);
+                    ctx.fillStyle = 'red';
+                    ctx.arc(fx, fy, 2, 0, Math.PI*2);
+                    ctx.fill();
+                } else if (m.type === 'freehand') {
+                    ctx.moveTo(m.points[0].x, m.points[0].y);
+                    for (let i = 1; i < m.points.length; i++) {
+                        ctx.lineTo(m.points[i].x, m.points[i].y);
+                    }
+                }
+                ctx.stroke();
+                ctx.shadowBlur = 0; // Reset shadow for hatching
+                
+                // Draw non-reflective hatching
+                if (m.type === 'arc' || !m.twoSided) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = isHoveredOrActive ? 'rgba(255, 68, 68, 0.5)' : 'rgba(255, 255, 255, 0.3)';
+                    ctx.lineWidth = 1;
+                    if (m.type === 'flat') {
+                        const dx = m.x2 - m.x1; const dy = m.y2 - m.y1;
+                        const len = Math.hypot(dx, dy);
+                        const nx = -dy / len; const ny = dx / len; 
+                        const bx = -nx * 6; const by = -ny * 6; // Back vector
+                        const tx = dx / len * 4; const ty = dy / len * 4; // Slant vector
+                        const hatches = Math.floor(len / 6);
+                        for (let i = 0; i <= hatches; i++) {
+                            const px = m.x1 + dx * (i/hatches);
+                            const py = m.y1 + dy * (i/hatches);
+                            ctx.moveTo(px, py);
+                            ctx.lineTo(px + bx + tx, py + by + ty);
+                        }
+                    } else if (m.type === 'arc') {
+                        let mina = Math.min(m.a1, m.a2); let maxa = Math.max(m.a1, m.a2);
+                        let diff = maxa - mina;
+                        let sweepStart;
+                        if (diff > Math.PI) {
+                            diff = 2*Math.PI - diff;
+                            sweepStart = maxa;
+                        } else {
+                            sweepStart = mina;
+                        }
+                        const hatches = Math.floor((m.r * diff) / 6);
+                        for (let i = 0; i <= hatches; i++) {
+                            const ang = sweepStart + diff * (i/hatches);
+                            const px = m.cx + Math.cos(ang) * m.r;
+                            const py = m.cy + Math.sin(ang) * m.r;
+                            let bx = Math.cos(ang) * 6; let by = Math.sin(ang) * 6;
+                            let tx = -Math.sin(ang) * 4; let ty = Math.cos(ang) * 4;
+                            if (!m.concave) { bx = -bx; by = -by; tx = -tx; ty = -ty; } // Flip for convex
+                            ctx.moveTo(px, py);
+                            ctx.lineTo(px + bx + tx, py + by + ty);
+                        }
+                    } else if (m.type === 'freehand') {
+                        const hatches = 3;
+                        for (let n = 0; n < m.points.length - 1; n++) {
+                            const p1 = m.points[n]; const p2 = m.points[n+1];
+                            const dx = p2.x - p1.x; const dy = p2.y - p1.y;
+                            const len = Math.hypot(dx, dy);
+                            if (len === 0) continue;
+                            const nx = -dy / len; const ny = dx / len; 
+                            const bx = -nx * 6; const by = -ny * 6;
+                            const tx = dx / len * 4; const ty = dy / len * 4;
+                            for (let i = 0; i <= hatches; i++) {
+                                const px = p1.x + dx * (i/hatches);
+                                const py = p1.y + dy * (i/hatches);
+                                ctx.moveTo(px, py);
+                                ctx.lineTo(px + bx + tx, py + by + ty);
+                            }
+                        }
+                    }
+                    ctx.stroke();
+                }
+                
+                // Draw rotation handle
+                if (m.id === hoveredRotationHandle || (isRotatingObj && movingObjId === m.id) || (m.id === hoveredId && drawMode === 'moveObj')) {
+                    let hx, hy;
+                    if (m.type === 'flat') {
+                        hx = (m.x1 + m.x2) / 2; hy = (m.y1 + m.y2) / 2;
+                        const dx = m.x2 - m.x1; const dy = m.y2 - m.y1;
+                        const len = Math.hypot(dx, dy);
+                        hx += (-dy / len) * 20; hy += (dx / len) * 20;
+                    } else if (m.type === 'arc') {
+                        let midAng = getArcMidAng(m);
+                        const hr = m.concave ? m.r - 20 : m.r + 20;
+                        hx = m.cx + Math.cos(midAng) * hr;
+                        hy = m.cy + Math.sin(midAng) * hr;
+                    } else if (m.type === 'freehand') {
+                        let cx = 0, cy = 0;
+                        for (let pt of m.points) { cx += pt.x; cy += pt.y; }
+                        cx /= m.points.length; cy /= m.points.length;
+                        hx = cx; hy = cy - 30;
+                    }
+                    ctx.beginPath();
+                    ctx.fillStyle = 'white';
+                    ctx.strokeStyle = '#06B6D4';
+                    ctx.lineWidth = 2;
+                    ctx.arc(hx, hy, 6, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.stroke();
+                    
+                    // Connection line
+                    ctx.beginPath();
+                    ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)';
+                    ctx.setLineDash([2, 2]);
+                    if (m.type === 'flat') {
+                        ctx.moveTo((m.x1 + m.x2) / 2, (m.y1 + m.y2) / 2);
+                    } else if (m.type === 'arc') {
+                        let midAng = getArcMidAng(m);
+                        ctx.moveTo(m.cx + Math.cos(midAng) * m.r, m.cy + Math.sin(midAng) * m.r);
+                    } else if (m.type === 'freehand') {
+                        let cx = 0, cy = 0;
+                        for (let pt of m.points) { cx += pt.x; cy += pt.y; }
+                        cx /= m.points.length; cy /= m.points.length;
+                        ctx.moveTo(cx, cy);
+                    }
+                    ctx.lineTo(hx, hy);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+            }
+
+            if (currentPath && currentPath.length > 1) {
+                ctx.strokeStyle = '#FFF';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(currentPath[0].x, currentPath[0].y);
+                for (let i=1; i<currentPath.length; i++) {
+                    ctx.lineTo(currentPath[i].x, currentPath[i].y);
+                }
+                ctx.stroke();
+            }
+
+            if (drawingStart && drawingEnd) {
+                ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+                ctx.beginPath();
+                ctx.moveTo(drawingStart.x, drawingStart.y);
+                ctx.lineTo(drawingEnd.x, drawingEnd.y);
+                ctx.stroke();
+            }
+
+            for (const m of mirrors) {
+                m.hitCount = 0; // Reset hits for this frame's raytracing
+            }
+
+            // Raytracing for all lights
+            for (const l of lights) {
+                const rays = [];
+                if (l.mode === 'point') {
+                    for (let i = 0; i < 36; i++) {
+                        const angle = (i * 10) * Math.PI / 180;
+                        rays.push({ rx: l.x, ry: l.y, dx: Math.cos(angle), dy: Math.sin(angle), distTravel: 0 });
+                    }
+                } else {
+                    const centerAngle = l.aim * Math.PI / 180;
+                    const spreadAngle = l.spread * Math.PI / 180;
+                    const startAngle = centerAngle - spreadAngle / 2;
+                    let sprayStep = 0;
+                    for (let i = 0; i < l.rays; i++) {
+                        const angle = l.rays > 1 ? startAngle + i * (sprayStep = spreadAngle / (l.rays - 1)) : centerAngle;
+                        rays.push({ rx: l.x, ry: l.y, dx: Math.cos(angle), dy: Math.sin(angle), distTravel: 0 });
+                    }
+                }
+
+                const maxRayDist = 3000;
+                const colors = ['#f00', '#f80', '#ff0', '#0f0', '#0ff', '#00f', '#80f', '#f0f'];
+                
+                for (let i = 0; i < rays.length; i++) {
+                    let r = rays[i];
+                    const myColor = l.mode === 'laser' && l.rays > 1 ? colors[i % colors.length] : `rgba(${l.colorRgb.r}, ${l.colorRgb.g}, ${l.colorRgb.b}, 1)`;
+                    
+                    ctx.beginPath(); // Start ray path
+                    ctx.moveTo(r.rx, r.ry);
+
+                    let points = [{x: r.rx, y: r.ry}];
+
+                    for (let b = 0; b <= maxBounces; b++) {
+                        let bestHit = null;
+                        let hitNormal = null;
+
+                        const farX = r.rx + r.dx * maxRayDist;
+                        const farY = r.ry + r.dy * maxRayDist;
+
+                        // Intersect Flat Mirrors
+                        for (const m of mirrors) {
+                            if (m.type === 'flat') {
+                                const hit = getLineIntersect(r.rx, r.ry, farX, farY, m.x1, m.y1, m.x2, m.y2);
+                                if (hit && hit.dist > 0.1 && (!bestHit || hit.dist < bestHit.dist)) {
+                                    let nx = -(m.y2 - m.y1); let ny = (m.x2 - m.x1);
+                                    const mag = Math.hypot(nx, ny);
+                                    nx /= mag; ny /= mag;
+                                    const isBack = (r.dx * nx + r.dy * ny > 0);
+                                    hitNormal = {nx: isBack ? -nx : nx, ny: isBack ? -ny : ny};
+                                    hit.isBack = isBack;
+                                    hit.m = m;
+                                    bestHit = hit;
+                                }
+                            } else if (m.type === 'arc') {
+                                const hit = getArcIntersect(r.rx, r.ry, r.dx, r.dy, m);
+                                if (hit && (!bestHit || hit.dist < bestHit.dist)) {
+                                    let nx = hit.x - m.cx; let ny = hit.y - m.cy;
+                                    const mag = Math.hypot(nx, ny);
+                                    nx /= mag; ny /= mag;
+                                    if (m.concave) { nx = -nx; ny = -ny; } // Front normal
+                                    const isBack = (r.dx * nx + r.dy * ny > 0);
+                                    hitNormal = {nx: isBack ? -nx : nx, ny: isBack ? -ny : ny};
+                                    hit.isBack = isBack;
+                                    hit.m = m;
+                                    bestHit = hit;
+                                }
+                            } else if (m.type === 'freehand') {
+                                for (let n = 0; n < m.points.length - 1; n++) {
+                                    const p1 = m.points[n]; const p2 = m.points[n+1];
+                                    const hit = getLineIntersect(r.rx, r.ry, farX, farY, p1.x, p1.y, p2.x, p2.y);
+                                    if (hit && hit.dist > 0.1 && (!bestHit || hit.dist < bestHit.dist)) {
+                                        let nx = -(p2.y - p1.y); let ny = (p2.x - p1.x);
+                                        const mag = Math.hypot(nx, ny);
+                                        if (mag === 0) continue;
+                                        nx /= mag; ny /= mag;
+                                        const isBack = (r.dx * nx + r.dy * ny > 0);
+                                        hitNormal = {nx: isBack ? -nx : nx, ny: isBack ? -ny : ny};
+                                        hit.isBack = isBack;
+                                        hit.m = m;
+                                        bestHit = hit;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (bestHit) {
+                            ctx.lineTo(bestHit.x, bestHit.y);
+                            points.push({x: bestHit.x, y: bestHit.y});
+                            
+                            // Modified the back reflection behaviour for twoSidedFlat
+                            if (bestHit.isBack && !bestHit.m.twoSided) {
+                                // Absorbed by the non-reflective side
+                                break;
+                            }
+                            
+                            bestHit.m.hitCount++; // Register hit on the mirror object
+
+                            if (diffuseRefl) {
+                                // Introduce some random scattering
+                                const scatter = (Math.random() - 0.5) * 0.5;
+                                const currentAngle = Math.atan2(hitNormal.ny, hitNormal.nx);
+                                hitNormal.nx = Math.cos(currentAngle + scatter);
+                                hitNormal.ny = Math.sin(currentAngle + scatter);
+                            }
+
+                            // Reflection Math
+                            const dot = r.dx * hitNormal.nx + r.dy * hitNormal.ny;
+                            r.dx = r.dx - 2 * dot * hitNormal.nx;
+                            r.dy = r.dy - 2 * dot * hitNormal.ny;
+                            
+                            r.rx = bestHit.x;
+                            r.ry = bestHit.y;
+
+                            if (showNormals) {
+                                ctx.save();
+                                ctx.beginPath();
+                                ctx.setLineDash([4, 4]);
+                                ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                                ctx.moveTo(bestHit.x, bestHit.y);
+                                ctx.lineTo(bestHit.x + hitNormal.nx * 40, bestHit.y + hitNormal.ny * 40);
+                                ctx.stroke();
+                                
+                                // Calculate angle theta (acos of dot product of incident ray and normal)
+                                const theta = Math.acos(Math.max(-1, Math.min(1, -dot))) * 180 / Math.PI;
+                                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                                ctx.font = '11px sans-serif';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                ctx.fillText(Math.round(theta) + '°', bestHit.x + hitNormal.nx * 55, bestHit.y + hitNormal.ny * 55);
+                                
+                                ctx.restore();
+                            }
+
+                        } else {
+                            ctx.lineTo(farX, farY);
+                            points.push({x: farX, y: farY});
+                            break;
+                        }
+                    }
+                    
+                    ctx.strokeStyle = myColor;
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+
+                    if (showHuygens) {
+                        for (let p=0; p<points.length-1; p++) {
+                            let len = Math.hypot(points[p+1].x - points[p].x, points[p+1].y - points[p].y);
+                            if (len > 0) {
+                                let n = Math.floor(len / 40);
+                                for (let j=1; j<n; j++) {
+                                    let hx = points[p].x + (points[p+1].x - points[p].x) * (j/n);
+                                    let hy = points[p].y + (points[p+1].y - points[p].y) * (j/n);
+                                    ctx.beginPath();
+                                    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                                    let r2 = (timeOffset + j*10) % 30;
+                                    ctx.arc(hx, hy, r2, 0, Math.PI*2);
+                                    ctx.stroke();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Light Sources Graphics
+            for (const l of lights) {
+                if (l.id === activeLightId) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = 'rgba(6, 182, 212, 0.8)';
+                    ctx.lineWidth = 2;
+                    ctx.arc(l.x, l.y, 14, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                ctx.fillStyle = l.color;
+                ctx.beginPath();
+                ctx.arc(l.x, l.y, 8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            requestAnimationFrame(loop);
+        }
+
+        requestAnimationFrame(loop);
+    
+</script>
+</body>
+</html>
