@@ -567,7 +567,7 @@
             steps: [
                 {
                     title: "Light Source",
-                    text: "Configure your light here. You can add multiple lights, change their type to Laser, and adjust the number of rays or beam spread.",
+                    text: "Configure your light here. You can add multiple lights, change their type to Laser, and delete the active light to start fresh.",
                     target: "#addLightBtn",
                     position: "right"
                 },
@@ -582,6 +582,12 @@
                     text: "Click and drag anywhere here to place your elements. You can move or rotate them later using the 'Move' modes in the top bar.",
                     target: "#canvas-container",
                     position: "center"
+                },
+                {
+                    title: "Cleanup & Reset",
+                    text: "Use 'Clear Canvas' at any time to remove all placed mirrors and reset to the default workspace.",
+                    target: "#clearBtn",
+                    position: "bottom"
                 },
                 {
                     title: "Physics Engine",
