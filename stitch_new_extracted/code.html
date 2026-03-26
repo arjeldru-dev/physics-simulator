@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OPTICSPACE | Photon Laboratory</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=IBM+Plex+Mono:wght@300;400;500;600&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#dbfcff",
+                        "secondary": "#c4c6d0",
+                        "on-secondary-fixed": "#191c22",
+                        "on-tertiary-fixed": "#40000c",
+                        "surface-container-high": "#292a2c",
+                        "surface-tint": "#00dbe9",
+                        "on-primary-fixed": "#002022",
+                        "primary-fixed": "#7df4ff",
+                        "secondary-container": "#44474f",
+                        "on-tertiary": "#680019",
+                        "surface-variant": "#343537",
+                        "primary-fixed-dim": "#00dbe9",
+                        "on-tertiary-fixed-variant": "#920027",
+                        "background": "#121315",
+                        "inverse-on-surface": "#303033",
+                        "outline": "#849495",
+                        "on-secondary": "#2d3038",
+                        "inverse-primary": "#006970",
+                        "secondary-fixed": "#e0e2ec",
+                        "error": "#ffb4ab",
+                        "outline-variant": "#3b494b",
+                        "tertiary": "#fff3f2",
+                        "tertiary-container": "#ffcdce",
+                        "on-surface": "#e3e2e5",
+                        "on-background": "#e3e2e5",
+                        "on-secondary-container": "#b3b5be",
+                        "surface-bright": "#38393b",
+                        "inverse-surface": "#e3e2e5",
+                        "on-tertiary-container": "#bf0036",
+                        "on-primary": "#00363a",
+                        "primary-container": "#00f0ff",
+                        "surface-dim": "#121315",
+                        "surface": "#121315",
+                        "tertiary-fixed-dim": "#ffb3b5",
+                        "surface-container-highest": "#343537",
+                        "on-error": "#690005",
+                        "error-container": "#93000a",
+                        "surface-container-low": "#1b1c1e",
+                        "surface-container-lowest": "#0d0e10",
+                        "on-error-container": "#ffdad6",
+                        "surface-container": "#1f2022",
+                        "on-surface-variant": "#b9cacb",
+                        "on-primary-fixed-variant": "#004f54",
+                        "secondary-fixed-dim": "#c4c6d0",
+                        "on-secondary-fixed-variant": "#44474f",
+                        "on-primary-container": "#006970",
+                        "tertiary-fixed": "#ffdada"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["IBM Plex Mono"]
+                    },
+                    borderRadius: {"DEFAULT": "0px", "lg": "0px", "xl": "0px", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .scanline-bg {
+            background: linear-gradient(rgba(18, 19, 21, 0) 50%, rgba(0, 240, 255, 0.02) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.01), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.01));
+            background-size: 100% 2px, 3px 100%;
+        }
+        .blueprint-grid {
+            background-image: 
+                linear-gradient(to right, #151820 1px, transparent 1px),
+                linear-gradient(to bottom, #151820 1px, transparent 1px),
+                linear-gradient(to right, #1a1d24 1px, transparent 1px),
+                linear-gradient(to bottom, #1a1d24 1px, transparent 1px);
+            background-size: 10px 10px, 10px 10px, 40px 40px, 40px 40px;
+        }
+        .grain {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.02;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3%3Cfilter id='noiseFilter'%3%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+        .clipped-corner {
+            clip-path: polygon(0 0, 92% 0, 100% 8%, 100% 100%, 0 100%);
+        }
+        .glow-cyan { text-shadow: 0 0 8px #00f0ff; }
+        .glow-box-cyan { box-shadow: 0 0 12px rgba(0, 240, 255, 0.3); }
+        .starburst {
+            background: radial-gradient(circle, #fff 0%, #00f0ff 40%, transparent 70%);
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1b1c1e;
+            height: 4px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #00f0ff;
+            cursor: pointer;
+            border-radius: 0;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body overflow-hidden cursor-crosshair">
+<div class="grain"></div>
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full h-[52px] z-50 bg-[#121315] border-b-[0.5px] border-[#3b494b] flex justify-between items-center px-6">
+<div class="flex items-center gap-4">
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#00F0FF] text-xl" style="font-variation-settings: 'FILL' 1;">change_history</span>
+<span class="font-['Space_Grotesk'] font-bold tracking-[6px] text-[#00F0FF] text-xl">OPTICSPACE</span>
+</div>
+<span class="font-['IBM_Plex_Mono'] text-[8px] tracking-[2px] text-[#3b494b] uppercase mt-[-2px]">Photon Laboratory</span>
+</div>
+</div>
+<nav class="hidden md:flex items-center gap-8 font-['IBM_Plex_Mono'] text-[10px] tracking-[2px]">
+<button class="text-[#00F0FF] border-b border-[#00F0FF] pb-1 flex items-center gap-2 hover:bg-[#00F0FF]/10 transition-all duration-100">
+<span class="material-symbols-outlined text-sm">open_with</span>
+<span>MOVE LIGHT</span>
+</button>
+<button class="text-[#3b494b] hover:text-[#00F0FF] pb-1 flex items-center gap-2 transition-all duration-100">
+<span class="material-symbols-outlined text-sm">filter_center_focus</span>
+<span>MOVE OBJECT</span>
+</button>
+<button class="text-[#3b494b] hover:text-[#00F0FF] pb-1 flex items-center gap-2 transition-all duration-100">
+<span class="material-symbols-outlined text-sm">layers</span>
+<span>TOGGLE 2-SIDED</span>
+</button>
+</nav>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-[#3b494b] hover:text-[#00F0FF] transition-colors">help</button>
+<button class="flex items-center gap-2 px-3 py-1.5 border border-[#3b494b] text-[10px] font-['IBM_Plex_Mono'] tracking-wider hover:border-error hover:text-error hover:shadow-[0_0_10px_rgba(255,180,171,0.2)] transition-all">
+<span class="material-symbols-outlined text-sm">delete_sweep</span>
+                CLEAR CANVAS
+            </button>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-[52px] h-[calc(100vh-52px)] w-[260px] z-40 bg-[#0d0e10] border-r-[0.5px] border-[#3b494b] flex flex-col scanline-bg overflow-y-auto">
+<!-- User Info -->
+<div class="p-4 border-b border-[#1A1D24] mb-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 border border-[#00F0FF] p-0.5">
+<img alt="Profile" class="w-full h-full object-cover" data-alt="minimalist vector avatar of a stylized optical lens sensor grid in neon cyan on black" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCT1tJisB5FAUPoP3xLQHIy_eqvggzQF8OzYMCL7NZJGwtrfvAOo3jEP_Lob6zPOjTobXYyLgI0ThJCLXez3hE1FLhk5qRiK6HpJ7Xq2oIoIvVhGJSh3HwoKhF20GqhaQ5et1VBhHju4JO6U-A_MNrSl1L4WdXl1ESdiaczO4Au0qjRWMnc6qRsvysDG4ziKnjPsRJU2lQqoebhtHzgL96eYDXNDMWzFX1GKQEb21WVEM7-US8IGH_TRPREhj8Eo80GF5ITZApU7PU"/>
+</div>
+<div class="flex flex-col">
+<span class="font-['IBM_Plex_Mono'] text-[11px] font-black text-[#00F0FF] tracking-widest">OPTIC_CORE_V1</span>
+<span class="font-['IBM_Plex_Mono'] text-[8px] text-[#3b494b] tracking-widest">Precision: 0.0001nm</span>
+</div>
+</div>
+</div>
+<!-- Section 1: LIGHT SOURCE -->
+<div class="px-4 mb-6">
+<h3 class="font-['Space_Grotesk'] text-[10px] uppercase tracking-[3px] text-primary/40 mb-3 flex items-center gap-2">
+<span class="w-1 h-1 bg-primary"></span> LIGHT SOURCE
+            </h3>
+<div class="space-y-4">
+<div class="relative">
+<select class="w-full bg-surface-container-lowest border border-outline-variant text-[10px] font-['IBM_Plex_Mono'] p-2 appearance-none focus:outline-none focus:border-primary-container">
+<option>X-RAY_EMITTER_01</option>
+<option>GAUSSIAN_BEAM_PRO</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-2 text-xs pointer-events-none">expand_more</span>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 aspect-square border border-outline-variant flex items-center justify-center hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-sm">add</span>
+</button>
+<button class="flex-1 aspect-square border border-outline-variant flex items-center justify-center hover:bg-error/10 hover:text-error transition-colors">
+<span class="material-symbols-outlined text-sm">delete</span>
+</button>
+<div class="flex-[2] flex border border-outline-variant">
+<button class="flex-1 flex items-center justify-center text-[9px] font-['IBM_Plex_Mono']">POINT</button>
+<button class="flex-1 flex items-center justify-center text-[9px] font-['IBM_Plex_Mono'] bg-primary-container text-on-primary">LASER</button>
+</div>
+</div>
+<div class="space-y-3 pt-2">
+<div class="space-y-1">
+<div class="flex justify-between text-[9px] font-['IBM_Plex_Mono'] text-outline">
+<span>RAYS</span>
+<span class="bg-primary-container text-on-primary px-1">12</span>
+</div>
+<input class="w-full" type="range"/>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-[9px] font-['IBM_Plex_Mono'] text-outline">
+<span>SPREAD</span>
+<span class="bg-primary-container text-on-primary px-1">45°</span>
+</div>
+<input class="w-full" type="range"/>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-[9px] font-['IBM_Plex_Mono'] text-outline">
+<span>AIM</span>
+<span class="bg-primary-container text-on-primary px-1">180.50</span>
+</div>
+<input class="w-full" type="range"/>
+</div>
+</div>
+<div class="flex items-center justify-between text-[9px] font-['IBM_Plex_Mono'] pt-2">
+<span class="text-outline">BEAM COLOR</span>
+<div class="w-8 h-4 bg-[#00F0FF] shadow-[0_0_8px_rgba(0,240,255,0.5)]"></div>
+</div>
+</div>
+</div>
+<div class="h-[1px] bg-[#1A1D24] mx-4 mb-6"></div>
+<!-- Section 2: OPTICAL ELEMENTS -->
+<div class="px-4 mb-6">
+<h3 class="font-['Space_Grotesk'] text-[10px] uppercase tracking-[3px] text-primary/40 mb-3 flex items-center gap-2">
+<span class="w-1 h-1 bg-primary"></span> OPTICAL ELEMENTS
+            </h3>
+<div class="grid grid-cols-2 gap-2">
+<button class="aspect-square bg-surface-container-high border-2 border-primary-container flex flex-col items-center justify-center gap-1 relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-full h-0.5 bg-primary-container glow-box-cyan"></div>
+<span class="material-symbols-outlined text-primary-container glow-cyan">linear_scale</span>
+<span class="text-[8px] font-['IBM_Plex_Mono'] text-primary-container">FLAT MIRROR</span>
+<div class="absolute inset-0 bg-primary-container/5 animate-pulse"></div>
+</button>
+<button class="aspect-square bg-surface-container-lowest border border-outline-variant flex flex-col items-center justify-center gap-1 hover:border-outline transition-colors">
+<span class="material-symbols-outlined text-[#4A5568]">radio_button_unchecked</span>
+<span class="text-[8px] font-['IBM_Plex_Mono'] text-[#4A5568]">CONCAVE</span>
+</button>
+<button class="aspect-square bg-surface-container-lowest border border-outline-variant flex flex-col items-center justify-center gap-1 hover:border-outline transition-colors">
+<span class="material-symbols-outlined text-[#4A5568]">panorama_fish_eye</span>
+<span class="text-[8px] font-['IBM_Plex_Mono'] text-[#4A5568]">CONVEX</span>
+</button>
+<button class="aspect-square bg-surface-container-lowest border border-outline-variant flex flex-col items-center justify-center gap-1 hover:border-outline transition-colors">
+<span class="material-symbols-outlined text-[#4A5568]">gesture</span>
+<span class="text-[8px] font-['IBM_Plex_Mono'] text-[#4A5568]">FREEHAND</span>
+</button>
+</div>
+</div>
+<div class="h-[1px] bg-[#1A1D24] mx-4 mb-6"></div>
+<!-- Section 3: RENDER SETTINGS -->
+<div class="px-4 mb-6">
+<h3 class="font-['Space_Grotesk'] text-[10px] uppercase tracking-[3px] text-primary/40 mb-3 flex items-center gap-2">
+<span class="w-1 h-1 bg-primary"></span> RENDER SETTINGS
+            </h3>
+<div class="space-y-3">
+<label class="flex items-center justify-between cursor-pointer group">
+<span class="text-[9px] font-['IBM_Plex_Mono'] text-outline group-hover:text-primary transition-colors">SHOW NORMALS</span>
+<div class="w-6 h-3 border border-outline-variant relative">
+<div class="absolute inset-0.5 right-auto w-2 bg-outline-variant"></div>
+</div>
+</label>
+<label class="flex items-center justify-between cursor-pointer group">
+<span class="text-[9px] font-['IBM_Plex_Mono'] text-outline group-hover:text-primary transition-colors">DIFFUSE REFLECTION</span>
+<div class="w-6 h-3 border border-primary-container relative">
+<div class="absolute inset-0.5 left-auto w-2 bg-primary-container"></div>
+</div>
+</label>
+<label class="flex items-center justify-between cursor-pointer group">
+<span class="text-[9px] font-['IBM_Plex_Mono'] text-outline group-hover:text-primary transition-colors">HUYGENS WAVELETS</span>
+<div class="w-6 h-3 border border-outline-variant relative">
+<div class="absolute inset-0.5 right-auto w-2 bg-outline-variant"></div>
+</div>
+</label>
+<label class="flex items-center justify-between cursor-pointer group">
+<span class="text-[9px] font-['IBM_Plex_Mono'] text-outline group-hover:text-primary transition-colors">VIRTUAL IMAGE</span>
+<div class="w-6 h-3 border border-outline-variant relative">
+<div class="absolute inset-0.5 right-auto w-2 bg-outline-variant"></div>
+</div>
+</label>
+<div class="space-y-1 pt-2">
+<div class="flex justify-between text-[9px] font-['IBM_Plex_Mono'] text-outline">
+<span>MAX BOUNCES</span>
+<span class="text-primary-container">64</span>
+</div>
+<input class="w-full" max="128" min="1" type="range" value="64"/>
+</div>
+</div>
+</div>
+<!-- Footer / Shortcuts -->
+<div class="mt-auto border-t border-[#1A1D24] p-4 bg-surface-container-lowest">
+<div class="flex items-center justify-between mb-4 group cursor-pointer">
+<h3 class="font-['Space_Grotesk'] text-[10px] uppercase tracking-[3px] text-primary/40 flex items-center gap-2">
+                    HELP &amp; SHORTCUTS
+                </h3>
+<span class="material-symbols-outlined text-xs">keyboard_arrow_up</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-center text-[9px] font-['IBM_Plex_Mono']">
+<span class="text-outline">SELECT ALL</span>
+<span class="px-1.5 py-0.5 border border-outline-variant text-[8px]">CTRL+A</span>
+</div>
+<div class="flex justify-between items-center text-[9px] font-['IBM_Plex_Mono']">
+<span class="text-outline">DUPLICATE</span>
+<span class="px-1.5 py-0.5 border border-outline-variant text-[8px]">SHIFT+D</span>
+</div>
+<div class="flex justify-between items-center text-[9px] font-['IBM_Plex_Mono']">
+<span class="text-outline">FOCUS ELEMENT</span>
+<span class="px-1.5 py-0.5 border border-outline-variant text-[8px]">F</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="ml-[260px] mt-[52px] h-[calc(100vh-52px)] relative overflow-hidden bg-[#08090B] blueprint-grid">
+<!-- Simulation Scene Visuals -->
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<!-- Radiant Light Source -->
+<div class="relative w-8 h-8 flex items-center justify-center">
+<div class="absolute w-4 h-4 starburst"></div>
+<div class="absolute w-2 h-2 bg-white rounded-full"></div>
+<!-- Light Rays -->
+<div class="absolute w-[800px] h-[1px] bg-gradient-to-r from-white via-[#00f0ff]/50 to-transparent origin-left rotate-[15deg]"></div>
+<div class="absolute w-[600px] h-[1px] bg-gradient-to-r from-white via-[#00f0ff]/50 to-transparent origin-left rotate-[75deg]"></div>
+<div class="absolute w-[700px] h-[1px] bg-gradient-to-r from-white via-[#00f0ff]/50 to-transparent origin-left rotate-[-45deg]"></div>
+<div class="absolute w-[500px] h-[1px] bg-gradient-to-r from-white via-[#00f0ff]/50 to-transparent origin-left rotate-[-120deg]"></div>
+<div class="absolute w-[650px] h-[1px] bg-gradient-to-r from-white via-[#00f0ff]/50 to-transparent origin-left rotate-[160deg]"></div>
+<div class="absolute w-[750px] h-[1px] bg-gradient-to-r from-white via-[#00f0ff]/50 to-transparent origin-left rotate-[-10deg]"></div>
+</div>
+<!-- Bouncing Simulation Representation -->
+<div class="absolute top-[30%] left-[20%] w-64 h-1 bg-white/20 -rotate-12 border-b-4 border-dashed border-white/10"></div> <!-- Flat Mirror 1 -->
+<div class="absolute top-[70%] left-[50%] w-64 h-1 bg-white/20 rotate-45 border-b-4 border-dashed border-white/10"></div> <!-- Flat Mirror 2 -->
+<!-- Animated Ray Path Illustration (Static Mockup) -->
+<svg class="absolute inset-0 w-full h-full opacity-80" viewbox="0 0 1200 800">
+<!-- Path Segment 1 -->
+<line stroke="#00f0ff" stroke-opacity="1.0" stroke-width="0.5" x1="600" x2="350" y1="400" y2="280"></line>
+<circle class="glow-box-cyan" cx="350" cy="280" fill="white" r="1.5"></circle>
+<!-- Path Segment 2 (Bounced) -->
+<line stroke="#00f0ff" stroke-opacity="0.7" stroke-width="0.5" x1="350" x2="700" y1="280" y2="600"></line>
+<circle cx="700" cy="600" fill="white" r="1.5"></circle>
+<!-- Path Segment 3 (Bounced) -->
+<line stroke="#00f0ff" stroke-opacity="0.4" stroke-width="0.5" x1="700" x2="1000" y1="600" y2="300"></line>
+</svg>
+</div>
+<!-- Dynamic UI Overlays -->
+<div class="absolute bottom-6 right-6 flex flex-col items-end gap-2 font-['IBM_Plex_Mono']">
+<div class="bg-surface-container-high/40 backdrop-blur-md border border-outline-variant p-3 space-y-1">
+<div class="text-[8px] text-outline tracking-widest uppercase">Cursor Coordinates</div>
+<div class="text-[10px] text-primary-container tabular-nums">X: 144.0210 / Y: 890.1192</div>
+</div>
+<div class="bg-surface-container-high/40 backdrop-blur-md border border-outline-variant p-3 space-y-1">
+<div class="text-[8px] text-outline tracking-widest uppercase">System Load</div>
+<div class="flex gap-1">
+<div class="w-1 h-2 bg-primary-container"></div>
+<div class="w-1 h-2 bg-primary-container"></div>
+<div class="w-1 h-2 bg-primary-container"></div>
+<div class="w-1 h-2 bg-primary-container/20"></div>
+<div class="w-1 h-2 bg-primary-container/20"></div>
+</div>
+</div>
+</div>
+<!-- Canvas Zoom Control -->
+<div class="absolute bottom-6 left-6 flex border border-outline-variant bg-surface-container-high/40 backdrop-blur-md">
+<button class="w-10 h-10 flex items-center justify-center hover:bg-primary-container/10 transition-colors border-r border-outline-variant">
+<span class="material-symbols-outlined text-sm">remove</span>
+</button>
+<div class="px-4 flex items-center justify-center font-['IBM_Plex_Mono'] text-[10px] text-primary-container tracking-widest">
+                100%
+            </div>
+<button class="w-10 h-10 flex items-center justify-center hover:bg-primary-container/10 transition-colors border-l border-outline-variant">
+<span class="material-symbols-outlined text-sm">add</span>
+</button>
+</div>
+</main>
+<!-- Context Indicators -->
+<div class="fixed top-[62px] left-[270px] pointer-events-none">
+<div class="flex items-center gap-3 px-3 py-1.5 border border-[#00F0FF]/20 bg-[#00F0FF]/5 backdrop-blur-sm">
+<div class="w-2 h-2 bg-primary-container rounded-full animate-pulse shadow-[0_0_8px_#00F0FF]"></div>
+<span class="font-['IBM_Plex_Mono'] text-[10px] tracking-widest text-[#00F0FF]">ACTIVE_SIMULATION_RUNNING</span>
+</div>
+</div>
+</body></html>
