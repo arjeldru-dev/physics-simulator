@@ -165,6 +165,137 @@
         document.getElementById('lightColor').oninput = e => { const l = lights.find(l => l.id === activeLightId); if(l) { l.color = e.target.value; l.colorRgb = hexToRgb(l.color); } };
         document.getElementById('clearBtn').onclick = () => { mirrors = []; lights = [{ id: 1, x: window.innerWidth / 2, y: window.innerHeight / 2, mode: 'point', rays: 1, spread: 5, aim: 0, color: '#FFFFFF', colorRgb: {r: 255, g: 255, b: 255} }]; activeLightId = 1; updateLightUI(); };
 
+        // --- Guide & Tour Logic ---
+        const GuideManager = {
+            currentStep: 0,
+            steps: [
+                {
+                    title: "Light Source",
+                    text: "Configure your light here. You can add multiple lights, change their type to Laser, and adjust the number of rays or beam spread.",
+                    target: "#addLightBtn",
+                    position: "right"
+                },
+                {
+                    title: "Optical Elements",
+                    text: "Choose between flat mirrors, curved lenses, or even freehand drawing. Each element reacts differently to light!",
+                    target: "#flatBtn",
+                    position: "right"
+                },
+                {
+                    title: "The Workshop",
+                    text: "Click and drag anywhere here to place your elements. You can move or rotate them later using the 'Move' modes in the top bar.",
+                    target: "#canvas-container",
+                    position: "center"
+                },
+                {
+                    title: "Physics Engine",
+                    text: "Toggle advanced simulations like Huygens Wavelets or Virtual Image tracing to see the true nature of light propagation.",
+                    target: "#normalsToggle",
+                    position: "right"
+                }
+            ],
+
+            init() {
+                this.modal = document.getElementById('welcomeModal');
+                this.overlay = document.getElementById('tourOverlay');
+                this.highlight = document.getElementById('tourHighlight');
+                this.popover = document.getElementById('tourPopover');
+                
+                // Event Listeners
+                document.getElementById('helpBtn').onclick = () => this.showWelcome();
+                document.getElementById('startTourBtn').onclick = () => this.startTour();
+                document.getElementById('skipTourBtn').onclick = () => this.hideWelcome();
+                document.getElementById('tourNext').onclick = () => this.nextStep();
+                document.getElementById('tourPrev').onclick = () => this.prevStep();
+                
+                document.getElementById('toggleSidebarHelp').onclick = () => {
+                    const content = document.getElementById('sidebar-help-content');
+                    const chevron = document.getElementById('helpChevron');
+                    content.classList.toggle('expanded');
+                    chevron.style.transform = content.classList.contains('expanded') ? 'rotate(180deg)' : 'rotate(0deg)';
+                };
+
+                // Check first visit
+                if (!localStorage.getItem('opticspace_visited')) {
+                    setTimeout(() => this.showWelcome(), 1000);
+                    localStorage.setItem('opticspace_visited', 'true');
+                }
+            },
+
+            showWelcome() {
+                this.modal.classList.add('active');
+            },
+
+            hideWelcome() {
+                this.modal.classList.remove('active');
+            },
+
+            startTour() {
+                this.hideWelcome();
+                this.overlay.classList.remove('hidden');
+                this.currentStep = 0;
+                this.showStep();
+            },
+
+            showStep() {
+                const step = this.steps[this.currentStep];
+                const targetEl = document.querySelector(step.target);
+                const rect = targetEl.getBoundingClientRect();
+                
+                // Highlight
+                this.highlight.style.top = (rect.top - 5) + 'px';
+                this.highlight.style.left = (rect.left - 5) + 'px';
+                this.highlight.style.width = (rect.width + 10) + 'px';
+                this.highlight.style.height = (rect.height + 10) + 'px';
+                this.highlight.classList.add('active');
+
+                // Popover Position
+                let popTop = rect.top;
+                let popLeft = rect.right + 20;
+
+                if (step.position === "center") {
+                    popLeft = rect.left + (rect.width / 2) - 130;
+                    popTop = rect.top + (rect.height / 2) - 50;
+                } else if (popLeft + 260 > window.innerWidth) {
+                    popLeft = rect.left - 280;
+                }
+
+                this.popover.style.top = popTop + 'px';
+                this.popover.style.left = popLeft + 'px';
+                this.popover.classList.add('active');
+
+                // Content
+                document.getElementById('tourTitle').innerText = step.title;
+                document.getElementById('tourText').innerText = step.text;
+                document.getElementById('tourProgress').innerText = `${this.currentStep + 1} / ${this.steps.length}`;
+            },
+
+            nextStep() {
+                if (this.currentStep < this.steps.length - 1) {
+                    this.currentStep++;
+                    this.showStep();
+                } else {
+                    this.endTour();
+                }
+            },
+
+            prevStep() {
+                if (this.currentStep > 0) {
+                    this.currentStep--;
+                    this.showStep();
+                }
+            },
+
+            endTour() {
+                this.overlay.classList.add('hidden');
+                this.highlight.classList.remove('active');
+                this.popover.classList.remove('active');
+            }
+        };
+
+        // Initialize Guide
+        GuideManager.init();
+
         // Interaction
         canvas.addEventListener('mousedown', e => {
             if (e.target !== canvas) return;
