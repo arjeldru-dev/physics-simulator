@@ -566,15 +566,25 @@
         </div>
         <div class="px-8 pb-8 space-y-4">
             <div class="grid grid-cols-2 gap-4">
-                <div class="p-4 bg-surface-container-lowest border border-outline-variant flex flex-col items-center gap-2">
+                <div class="p-4 bg-surface-container-lowest border border-outline-variant flex flex-col items-center gap-2 transition-colors hover:border-[#00f0ff]/50">
                     <span class="material-symbols-outlined text-primary-container">draw</span>
                     <span class="text-[9px] font-['IBM_Plex_Mono'] font-bold uppercase tracking-wider text-outline">DRAW</span>
                     <span class="text-[9px] font-['IBM_Plex_Mono'] text-[#3b494b] text-center">Drag to place mirrors</span>
                 </div>
-                <div class="p-4 bg-surface-container-lowest border border-outline-variant flex flex-col items-center gap-2">
+                <div class="p-4 bg-surface-container-lowest border border-outline-variant flex flex-col items-center gap-2 transition-colors hover:border-[#00f0ff]/50">
                     <span class="material-symbols-outlined text-primary-container">move_selection_left</span>
                     <span class="text-[9px] font-['IBM_Plex_Mono'] font-bold uppercase tracking-wider text-outline">ADJUST</span>
                     <span class="text-[9px] font-['IBM_Plex_Mono'] text-[#3b494b] text-center">Move & rotate objects</span>
+                </div>
+                <div class="p-4 bg-surface-container-lowest border border-outline-variant flex flex-col items-center gap-2 transition-colors hover:border-[#00f0ff]/50">
+                    <span class="material-symbols-outlined text-primary-container">straighten</span>
+                    <span class="text-[9px] font-['IBM_Plex_Mono'] font-bold uppercase tracking-wider text-outline">MEASURE</span>
+                    <span class="text-[9px] font-['IBM_Plex_Mono'] text-[#3b494b] text-center">Ruler & Protractor</span>
+                </div>
+                <div class="p-4 bg-surface-container-lowest border border-outline-variant flex flex-col items-center gap-2 transition-colors hover:border-[#00f0ff]/50">
+                    <span class="material-symbols-outlined text-primary-container">emoji_objects</span>
+                    <span class="text-[9px] font-['IBM_Plex_Mono'] font-bold uppercase tracking-wider text-outline">CHALLENGE</span>
+                    <span class="text-[9px] font-['IBM_Plex_Mono'] text-[#3b494b] text-center">Solve reflection puzzles</span>
                 </div>
             </div>
             <div class="flex gap-3 pt-4">
@@ -748,7 +758,7 @@
                 document.getElementById('laserBtn').classList.remove('active-pill');
                 document.getElementById('laserControlsWrapper').classList.add('hidden');
                 document.getElementById('raysVal').innerText = '1';
-                document.getElementById('spreadVal').innerText = '5Â°';
+                document.getElementById('spreadVal').innerText = '5°';
                 return;
             }
             
@@ -764,7 +774,7 @@
             document.getElementById('raysSlider').value = l.rays;
             document.getElementById('raysVal').innerText = l.rays;
             document.getElementById('spreadSlider').value = l.spread;
-            document.getElementById('spreadVal').innerText = l.spread + 'Â°';
+            document.getElementById('spreadVal').innerText = l.spread + '°';
             document.getElementById('aimSlider').value = l.aim;
             document.getElementById('lightColor').value = l.color;
         }
@@ -805,7 +815,7 @@
         };
 
         document.getElementById('raysSlider').oninput = e => { const l = lights.find(l => l.id === activeLightId); if(l) { l.rays = parseInt(e.target.value); document.getElementById('raysVal').innerText = l.rays; } };
-        document.getElementById('spreadSlider').oninput = e => { const l = lights.find(l => l.id === activeLightId); if(l) { l.spread = parseInt(e.target.value); document.getElementById('spreadVal').innerText = l.spread + 'Â°'; } };
+        document.getElementById('spreadSlider').oninput = e => { const l = lights.find(l => l.id === activeLightId); if(l) { l.spread = parseInt(e.target.value); document.getElementById('spreadVal').innerText = l.spread + '°'; } };
         document.getElementById('aimSlider').oninput = e => { const l = lights.find(l => l.id === activeLightId); if(l) l.aim = parseInt(e.target.value); };
 
         const lightSelect = document.getElementById('lightSelect');
@@ -845,10 +855,22 @@
                     position: "right"
                 },
                 {
+                    title: "Measurement Tools",
+                    text: "Use the new Protractor and Ruler to measure incident angles and custom distances mathematically! press 'P' / 'R'.",
+                    target: "#rulerBtn",
+                    position: "right"
+                },
+                {
                     title: "The Workshop",
                     text: "Click and drag anywhere here to place your elements. You can move or rotate them later using the 'Move' modes in the top bar.",
                     target: "#canvas-container",
                     position: "center"
+                },
+                {
+                    title: "Challenge Lab",
+                    text: "Engage in pre-built physics problems! To access the lab, click the toggle button on the right edge of the screen.",
+                    target: "#rightToggleBtn",
+                    position: "left"
                 },
                 {
                     title: "Cleanup & Reset",
@@ -859,7 +881,7 @@
                 {
                     title: "Physics Engine",
                     text: "Toggle advanced simulations like Huygens Wavelets or Virtual Image tracing to see the true nature of light propagation.",
-                    target: "#normalsToggle",
+                    target: "#renderSettingsSection",
                     position: "right"
                 }
             ],
@@ -885,9 +907,9 @@
                 };
 
                 // Check first visit
-                if (!localStorage.getItem('opticspace_visited')) {
+                if (!localStorage.getItem('opticspace_visited_v3')) {
                     setTimeout(() => this.showWelcome(), 1000);
-                    localStorage.setItem('opticspace_visited', 'true');
+                    localStorage.setItem('opticspace_visited_v3', 'true');
                 }
             },
 
@@ -1013,8 +1035,8 @@
                 id: 1,
                 title: "LAW OF REFLECTION",
                 icon: "bolt",
-                description: "A laser beam strikes a flat mirror at an angle. Use the protractor tool to click the bounce point and measure the angles of incidence and reflection. Verify: Î¸áµ¢ = Î¸áµ£.",
-                objectives: ["Measure Î¸áµ¢ at the bounce point", "Measure Î¸áµ£ at the bounce point", "Confirm the law: Î¸áµ¢ = Î¸áµ£"],
+                description: "A laser beam strikes a flat mirror at an angle. Use the protractor tool to click the bounce point and measure the angles of incidence and reflection. Verify: θᵢ = θᵣ.",
+                objectives: ["Measure θᵢ at the bounce point", "Measure θᵣ at the bounce point", "Confirm the law: θᵢ = θᵣ"],
                 setup: function(cw, ch) {
                     mirrorIdCounter = 0;
                     const mirror = createFlatMirrorByAngle(cw * 0.5, ch * 0.55, Math.min(280, cw * 0.35), 35, true);
@@ -1026,16 +1048,16 @@
                     };
                 },
                 questions: [
-                    { type: 'numeric', prompt: "Click the bounce point with the Protractor tool (P). What is the angle of incidence (Î¸áµ¢) in degrees?", hint: "Press P to activate Protractor, then click where the laser hits the mirror. The yellow arc shows Î¸áµ¢.", expected: 35, tolerance: 3, unit: 'Â°' },
-                    { type: 'numeric', prompt: "What is the angle of reflection (Î¸áµ£) in degrees?", hint: "The cyan arc at the same bounce point shows Î¸áµ£.", expected: 35, tolerance: 3, unit: 'Â°' },
-                    { type: 'multiple_choice', prompt: "Based on your measurements, what is the relationship between Î¸áµ¢ and Î¸áµ£?", options: ["Î¸áµ¢ is always larger than Î¸áµ£", "Î¸áµ¢ equals Î¸áµ£", "Î¸áµ¢ is always smaller than Î¸áµ£", "There is no fixed relationship"], correctIndex: 1, explanation: "The Law of Reflection states that the angle of incidence always equals the angle of reflection (Î¸áµ¢ = Î¸áµ£)." }
+                    { type: 'numeric', prompt: "Click the bounce point with the Protractor tool (P). What is the angle of incidence (θᵢ) in degrees?", hint: "Press P to activate Protractor, then click where the laser hits the mirror. The yellow arc shows θᵢ.", expected: 35, tolerance: 3, unit: '°' },
+                    { type: 'numeric', prompt: "What is the angle of reflection (θᵣ) in degrees?", hint: "The cyan arc at the same bounce point shows θᵣ.", expected: 35, tolerance: 3, unit: '°' },
+                    { type: 'multiple_choice', prompt: "Based on your measurements, what is the relationship between θᵢ and θᵣ?", options: ["θᵢ is always larger than θᵣ", "θᵢ equals θᵣ", "θᵢ is always smaller than θᵣ", "There is no fixed relationship"], correctIndex: 1, explanation: "The Law of Reflection states that the angle of incidence always equals the angle of reflection (θᵢ = θᵣ)." }
                 ]
             },
             {
                 id: 2,
                 title: "THE CORNER REFLECTOR",
                 icon: "corners",
-                description: "Two flat mirrors are arranged at 90Â° forming an L-shape. A laser enters at an angle. Use the measurement tools to analyze the reflection behavior and discover the retroreflection property.",
+                description: "Two flat mirrors are arranged at 90° forming an L-shape. A laser enters at an angle. Use the measurement tools to analyze the reflection behavior and discover the retroreflection property.",
                 objectives: ["Measure the angle between mirrors", "Count the bounces", "Determine exit ray direction"],
                 setup: function(cw, ch) {
                     mirrorIdCounter = 0;
@@ -1049,16 +1071,16 @@
                     };
                 },
                 questions: [
-                    { type: 'numeric', prompt: "Use the Protractor tool to measure the angle between the two mirrors (click one mirror, then the other). What angle do they form?", hint: "Press P, click the horizontal mirror, then click the vertical mirror.", expected: 90, tolerance: 3, unit: 'Â°' },
+                    { type: 'numeric', prompt: "Use the Protractor tool to measure the angle between the two mirrors (click one mirror, then the other). What angle do they form?", hint: "Press P, click the horizontal mirror, then click the vertical mirror.", expected: 90, tolerance: 3, unit: '°' },
                     { type: 'numeric', prompt: "How many times does the laser beam bounce inside the corner reflector?", hint: "Count the number of reflection points. Toggle Normals ON to see them clearly.", expected: 2, tolerance: 0, unit: '' },
-                    { type: 'multiple_choice', prompt: "Try aiming the laser at different angles (adjust the AIM slider). The exiting ray always travels:", options: ["At 90Â° to the incoming ray", "Parallel to the incoming ray but opposite direction", "Along the surface of one of the mirrors", "At a random angle each time"], correctIndex: 1, explanation: "A corner reflector (two mirrors at 90Â°) always sends light back parallel to its entry direction. This is called retroreflection â€” used in road signs and lunar reflectors!" }
+                    { type: 'multiple_choice', prompt: "Try aiming the laser at different angles (adjust the AIM slider). The exiting ray always travels:", options: ["At 90° to the incoming ray", "Parallel to the incoming ray but opposite direction", "Along the surface of one of the mirrors", "At a random angle each time"], correctIndex: 1, explanation: "A corner reflector (two mirrors at 90°) always sends light back parallel to its entry direction. This is called retroreflection — used in road signs and lunar reflectors!" }
                 ]
             },
             {
                 id: 3,
                 title: "CONCAVE MIRROR FOCUS",
                 icon: "filter_center_focus",
-                description: "A concave mirror is hit by multiple parallel laser rays. Observe how the reflected rays converge and use the ruler tool to measure the focal length â€” the distance from the mirror surface to where the rays meet.",
+                description: "A concave mirror is hit by multiple parallel laser rays. Observe how the reflected rays converge and use the ruler tool to measure the focal length — the distance from the mirror surface to where the rays meet.",
                 objectives: ["Observe ray convergence", "Measure the focal length", "Understand concave vs convex"],
                 setup: function(cw, ch) {
                     mirrorIdCounter = 0;
@@ -1240,7 +1262,7 @@
                 } else {
                     this.wrongCounts[qIndex]++;
                     feedback.className = 'flex items-center gap-2 p-2 border border-red-500/30 bg-red-500/5';
-                    feedback.innerHTML = '<span class="material-symbols-outlined text-red-400 text-sm">close</span><span class="text-[9px] font-[\'IBM_Plex_Mono\'] text-red-400">Incorrect â€” try again' + (this.wrongCounts[qIndex] >= 2 && q.hint ? '' : '') + '</span>';
+                    feedback.innerHTML = '<span class="material-symbols-outlined text-red-400 text-sm">close</span><span class="text-[9px] font-[\'IBM_Plex_Mono\'] text-red-400">Incorrect — try again' + (this.wrongCounts[qIndex] >= 2 && q.hint ? '' : '') + '</span>';
                     if (this.wrongCounts[qIndex] >= 2) this.renderProblemDetail();
                 }
             },
@@ -1258,7 +1280,7 @@
                     if (btn) { btn.style.borderColor = 'rgba(239,68,68,0.5)'; btn.style.color = '#ef4444'; btn.style.backgroundColor = 'rgba(239,68,68,0.05)'; }
                     if (feedback) {
                         feedback.className = 'flex items-center gap-2 p-2 border border-red-500/30 bg-red-500/5 mt-1';
-                        feedback.innerHTML = '<span class="material-symbols-outlined text-red-400 text-sm">close</span><span class="text-[9px] font-[\'IBM_Plex_Mono\'] text-red-400">Not quite â€” try another option</span>';
+                        feedback.innerHTML = '<span class="material-symbols-outlined text-red-400 text-sm">close</span><span class="text-[9px] font-[\'IBM_Plex_Mono\'] text-red-400">Not quite — try another option</span>';
                     }
                 }
             },
@@ -1369,25 +1391,25 @@
                 } else {
                     const l = lights.find(l => l.id === activeLightId);
                     if (l) {
-                        if (isElementLocked('light', l.id)) { showToast('âŠ˜ LOCKED â€” This light is fixed for this challenge'); return; }
+                        if (isElementLocked('light', l.id)) { showToast('⊘ LOCKED — This light is fixed for this challenge'); return; }
                         l.x = mouseX; l.y = mouseY;
                     }
                 }
             } else if (drawMode === 'moveObj') {
                 if (hoveredRotationHandle !== null) {
-                    if (isElementLocked('mirror', hoveredRotationHandle)) { showToast('âŠ˜ LOCKED â€” This element is fixed for this challenge'); return; }
+                    if (isElementLocked('mirror', hoveredRotationHandle)) { showToast('⊘ LOCKED — This element is fixed for this challenge'); return; }
                     isRotatingObj = true;
                     movingObjId = hoveredRotationHandle;
                     lastMousePos = {x: mouseX, y: mouseY};
                 } else if (hoveredId !== null) {
-                    if (isElementLocked('mirror', hoveredId)) { showToast('âŠ˜ LOCKED â€” This element is fixed for this challenge'); return; }
+                    if (isElementLocked('mirror', hoveredId)) { showToast('⊘ LOCKED — This element is fixed for this challenge'); return; }
                     isMovingObj = true;
                     movingObjId = hoveredId;
                     lastMousePos = {x: mouseX, y: mouseY};
                 }
             } else if (drawMode === 'toggleTwoSided') {
                 if (hoveredId !== null) {
-                    if (isElementLocked('mirror', hoveredId)) { showToast('âŠ˜ LOCKED â€” This element is fixed for this challenge'); return; }
+                    if (isElementLocked('mirror', hoveredId)) { showToast('⊘ LOCKED — This element is fixed for this challenge'); return; }
                     const m = mirrors.find(m => m.id === hoveredId);
                     if (m && m.type !== 'arc') {
                         m.twoSided = !m.twoSided;
@@ -1635,7 +1657,7 @@
 
         window.addEventListener('keydown', e => {
             if ((e.key === 'Backspace' || e.key === 'Delete') && hoveredId !== null) {
-                if (isElementLocked('mirror', hoveredId)) { showToast('âŠ˜ LOCKED â€” Cannot delete challenge elements'); return; }
+                if (isElementLocked('mirror', hoveredId)) { showToast('⊘ LOCKED — Cannot delete challenge elements'); return; }
                 mirrors = mirrors.filter(m => m.id !== hoveredId);
                 hoveredId = null;
             }
@@ -2139,7 +2161,7 @@
                                 ctx.font = '11px sans-serif';
                                 ctx.textAlign = 'center';
                                 ctx.textBaseline = 'middle';
-                                ctx.fillText(Math.round(theta) + 'Â°', bestHit.x + hitNormal.nx * 55, bestHit.y + hitNormal.ny * 55);
+                                ctx.fillText(Math.round(theta) + '°', bestHit.x + hitNormal.nx * 55, bestHit.y + hitNormal.ny * 55);
                                 
                                 ctx.restore();
                             }
@@ -2147,7 +2169,7 @@
                         } else {
                             ctx.lineTo(farX, farY);
                             points.push({x: farX, y: farY});
-                            // Store final (infinite) segment â€” cap length for display
+                            // Store final (infinite) segment — cap length for display
                             const lastPt = points[points.length - 2];
                             if (lastPt) {
                                 currentRayData.segments.push({x1: lastPt.x, y1: lastPt.y, x2: farX, y2: farY, len: Math.hypot(farX - lastPt.x, farY - lastPt.y)});
@@ -2302,7 +2324,7 @@
                 if (!mA || !mB) { protractorPairs.splice(pi, 1); continue; } // Deleted
 
                 const angle = getAngleBetweenMirrors(mA, mB);
-                const displayAngle = angle.toFixed(1) + 'Â°';
+                const displayAngle = angle.toFixed(1) + '°';
 
                 const cA = getMirrorCenter(mA);
                 const cB = getMirrorCenter(mB);
@@ -2500,7 +2522,7 @@
                 ctx.stroke();
 
                 // Angle labels
-                const thetaStr = bounce.theta.toFixed(1) + 'Â°';
+                const thetaStr = bounce.theta.toFixed(1) + '°';
 
                 // Incidence angle label
                 const inBisector = normalAng + inSweep / 2;
@@ -2508,7 +2530,7 @@
                 const inLabelY = by + Math.sin(inBisector) * (arcR + 16);
 
                 ctx.font = 'bold 10px "IBM Plex Mono", monospace';
-                let tw = ctx.measureText('Î¸áµ¢=' + thetaStr).width;
+                let tw = ctx.measureText('θᵢ=' + thetaStr).width;
                 ctx.fillStyle = 'rgba(13, 14, 16, 0.95)';
                 ctx.fillRect(inLabelX - tw / 2 - 4, inLabelY - 7, tw + 8, 16);
                 ctx.strokeStyle = 'rgba(255, 200, 50, 0.4)';
@@ -2517,14 +2539,14 @@
                 ctx.fillStyle = '#ffc832';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText('Î¸áµ¢=' + thetaStr, inLabelX, inLabelY);
+                ctx.fillText('θᵢ=' + thetaStr, inLabelX, inLabelY);
 
                 // Reflection angle label
                 const outBisector = normalAng + outSweep / 2;
                 const outLabelX = bx + Math.cos(outBisector) * (arcR + 16);
                 const outLabelY = by + Math.sin(outBisector) * (arcR + 16);
 
-                tw = ctx.measureText('Î¸áµ£=' + thetaStr).width;
+                tw = ctx.measureText('θᵣ=' + thetaStr).width;
                 ctx.fillStyle = 'rgba(13, 14, 16, 0.95)';
                 ctx.fillRect(outLabelX - tw / 2 - 4, outLabelY - 7, tw + 8, 16);
                 ctx.strokeStyle = 'rgba(50, 200, 255, 0.4)';
@@ -2533,7 +2555,7 @@
                 ctx.fillStyle = '#32c8ff';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText('Î¸áµ£=' + thetaStr, outLabelX, outLabelY);
+                ctx.fillText('θᵣ=' + thetaStr, outLabelX, outLabelY);
 
                 // Bounce point marker (brighter dot)
                 ctx.beginPath();
@@ -2663,11 +2685,8 @@
     };
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
-
-    // Fix tour step 4 ("Physics Engine") to target the whole Render Settings section
-    if (GuideManager && GuideManager.steps && GuideManager.steps[4]) {
-        GuideManager.steps[4].target = '#renderSettingsSection';
-    }
+    
+    // Removed old tour step 4 ("Physics Engine") override which conflicted with the new Challenge Lab.
 
     // === STATUS INDICATOR (active/inactive based on lights) ===
     const statusDot = document.getElementById('statusDot');
