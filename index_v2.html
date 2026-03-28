@@ -1095,7 +1095,7 @@
                 },
                 questions: [
                     { type: 'multiple_choice', prompt: "After hitting the concave mirror, do the reflected rays converge or diverge?", options: ["They converge (meet at a point)", "They diverge (spread apart)", "They remain parallel", "They scatter randomly"], correctIndex: 0, explanation: "A concave mirror focuses incoming parallel rays to a single point called the focal point (F), shown as the red dot." },
-                    { type: 'numeric', prompt: "Use the Ruler tool (R) to click the red focal point (F), then click the mirror surface. What is the focal length in pixels?", hint: "Press R to activate Ruler. Click the red F dot, then click the mirror. The measurement label shows the distance.", expected: 0, tolerance: 20, unit: 'px', isDynamic: true, dynamicKey: 1 },
+                    { type: 'numeric', prompt: "The focal length (f) of a spherical mirror is exactly half its radius of curvature (R). Hover over the mirror to find its Radius, then calculate the focal length (f = R / 2). What is the value in pixels?", hint: "Hover the mouse over the mirror to see 'Radius' in its tooltip. Divide that number by 2.", expected: 0, tolerance: 2, unit: 'px', isDynamic: true, dynamicKey: 1 },
                     { type: 'multiple_choice', prompt: "If this concave mirror were replaced with a convex mirror, the reflected rays would:", options: ["Still converge at the same point", "Converge at twice the distance", "Diverge (spread apart)", "Be absorbed completely"], correctIndex: 2, explanation: "A convex mirror causes parallel rays to diverge after reflection. The focal point of a convex mirror is virtual (behind the mirror)." }
                 ]
             }
