@@ -234,6 +234,24 @@
         }
         .hud-toggle input:checked ~ .knob { left: auto; right: 2px; background: #00f0ff; box-shadow: 0 0 6px rgba(0,240,255,0.6); }
         .hud-toggle:has(input:checked) { border-color: #00f0ff; box-shadow: 0 0 8px rgba(0,240,255,0.2); }
+
+        /* === SIDEBAR TOGGLES === */
+        #leftSidebar { transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        #leftSidebar.collapsed { margin-left: -260px; }
+        #rightSidebar { transition: margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        #rightSidebar.collapsed { margin-right: -320px; }
+        
+        .sidebar-toggle-btn {
+            position: absolute; top: 50%; transform: translateY(-50%); z-index: 45;
+            width: 20px; height: 48px; display: flex; align-items: center; justify-content: center;
+            background: #0d0e10; border: 1px solid #3b494b; cursor: pointer; color: #849495;
+            transition: all 0.3s ease;
+        }
+        .sidebar-toggle-btn:hover { border-color: #00f0ff; color: #00f0ff; box-shadow: 0 0 10px rgba(0,240,255,0.2) inset, 0 0 10px rgba(0,240,255,0.2); }
+        #leftToggleBtn { left: 260px; border-left: none; border-radius: 0 4px 4px 0; }
+        #leftSidebar.collapsed ~ #leftToggleBtn { left: 0; border: 1px solid #3b494b; border-left: none; }
+        #rightToggleBtn { right: 320px; border-right: none; border-radius: 4px 0 0 4px; }
+        #rightSidebar.collapsed ~ #rightToggleBtn { right: 0; border: 1px solid #3b494b; border-right: none; }
     </style>
 </head>
 <body class="bg-background text-on-surface font-body overflow-hidden h-screen flex flex-col cursor-crosshair">
@@ -271,7 +289,7 @@
 
 <div class="flex flex-1 overflow-hidden relative">
 <!-- SideNavBar -->
-<aside class="w-[260px] z-40 bg-[#0d0e10] border-r-[0.5px] border-[#3b494b] flex flex-col scanline-bg overflow-y-auto shrink-0 select-none">
+<aside id="leftSidebar" class="w-[260px] z-40 bg-[#0d0e10] border-r-[0.5px] border-[#3b494b] flex flex-col scanline-bg overflow-y-auto shrink-0 select-none">
     <!-- Section 1: LIGHT SOURCE -->
     <div class="px-4 pt-4 mb-4">
         <h3 class="font-['Space_Grotesk'] text-[10px] uppercase tracking-[3px] text-primary/40 mb-3 flex items-center gap-2">
@@ -352,7 +370,36 @@
     </div>
     <div class="h-[1px] bg-[#1A1D24] mx-4 mb-4"></div>
 
-    <!-- Section 3: RENDER SETTINGS -->
+    <!-- Section 3: MEASUREMENT TOOLS -->
+    <div class="px-4 mb-4">
+        <h3 class="font-['Space_Grotesk'] text-[10px] uppercase tracking-[3px] text-primary/40 mb-3 flex items-center gap-2">
+            <span class="w-1 h-1 bg-primary"></span> MEASUREMENT TOOLS
+        </h3>
+        <div class="grid grid-cols-2 gap-2 mb-3">
+            <button id="rulerBtn" class="mode-btn aspect-square bg-surface-container-lowest border border-outline-variant flex flex-col items-center justify-center gap-1 hover:border-outline transition-colors">
+                <span class="material-symbols-outlined text-[#4A5568]">straighten</span>
+                <span class="text-[8px] font-['IBM_Plex_Mono'] text-[#4A5568]">RULER</span>
+            </button>
+            <button id="protractorBtn" class="mode-btn aspect-square bg-surface-container-lowest border border-outline-variant flex flex-col items-center justify-center gap-1 hover:border-outline transition-colors">
+                <span class="material-symbols-outlined text-[#4A5568]">square_foot</span>
+                <span class="text-[8px] font-['IBM_Plex_Mono'] text-[#4A5568]">PROTRACTOR</span>
+            </button>
+        </div>
+        <div class="flex items-center justify-between text-[9px] font-['IBM_Plex_Mono'] mb-3">
+            <span class="text-outline">UNIT SCALE</span>
+            <div class="flex items-center gap-1">
+                <span class="text-outline">1 px =</span>
+                <input type="number" id="unitScaleInput" value="1" min="0.01" max="100" step="0.1" class="w-14 bg-surface-container-lowest border border-outline-variant text-[10px] font-['IBM_Plex_Mono'] p-1 text-center text-on-surface focus:outline-none focus:border-primary-container"/>
+                <span class="text-outline">cm</span>
+            </div>
+        </div>
+        <button id="clearMeasurementsBtn" class="w-full flex items-center justify-center gap-2 px-3 py-1.5 border border-outline-variant text-[9px] font-['IBM_Plex_Mono'] tracking-wider text-outline hover:border-primary-container hover:text-primary-container transition-all">
+            <span class="material-symbols-outlined text-sm">backspace</span> CLEAR MEASUREMENTS
+        </button>
+    </div>
+    <div class="h-[1px] bg-[#1A1D24] mx-4 mb-4"></div>
+
+    <!-- Section 4: RENDER SETTINGS -->
     <div id="renderSettingsSection" class="px-4 mb-4">
         <h3 class="font-['Space_Grotesk'] text-[10px] uppercase tracking-[3px] text-primary/40 mb-3 flex items-center gap-2">
             <span class="w-1 h-1 bg-primary"></span> RENDER SETTINGS
@@ -403,9 +450,20 @@
                 <span class="text-outline">ROTATE</span>
                 <span class="px-1.5 py-0.5 border border-outline-variant text-[8px]">HANDLE</span>
             </div>
+            <div class="flex justify-between items-center text-[9px] font-['IBM_Plex_Mono']">
+                <span class="text-outline">RULER TOOL</span>
+                <span class="px-1.5 py-0.5 border border-outline-variant text-[8px]">R</span>
+            </div>
+            <div class="flex justify-between items-center text-[9px] font-['IBM_Plex_Mono']">
+                <span class="text-outline">PROTRACTOR TOOL</span>
+                <span class="px-1.5 py-0.5 border border-outline-variant text-[8px]">P</span>
+            </div>
         </div>
     </div>
 </aside>
+<button id="leftToggleBtn" class="sidebar-toggle-btn">
+    <span class="material-symbols-outlined text-[16px] transition-transform duration-300" id="leftToggleIcon">chevron_left</span>
+</button>
 
 <!-- Main Canvas -->
 <main class="flex-1 relative overflow-hidden bg-[#08090B] blueprint-grid" id="canvas-container">
@@ -441,6 +499,59 @@
         </button>
     </div>
 </main>
+<aside id="rightSidebar" class="w-[320px] z-40 bg-[#0d0e10] border-l-[0.5px] border-[#3b494b] flex flex-col scanline-bg overflow-y-auto shrink-0 select-none">
+    <div class="px-4 py-4 border-b border-[#1A1D24]">
+        <h3 class="font-['Space_Grotesk'] text-[10px] uppercase tracking-[3px] text-primary/40 flex items-center gap-2">
+            <span class="w-1 h-1 bg-primary"></span> CHALLENGE LAB
+        </h3>
+    </div>
+    <div id="noProblemSelected" class="flex-1 p-4 flex flex-col items-center justify-center text-center">
+        <span class="material-symbols-outlined text-4xl text-[#3b494b] mb-4">science</span>
+        <h4 class="font-['IBM_Plex_Mono'] text-[11px] text-outline tracking-widest uppercase mb-2">Select a Challenge</h4>
+        <div id="problemList" class="w-full space-y-2 mt-4">
+        </div>
+    </div>
+    <div id="activeProblemView" class="hidden flex-1 flex flex-col overflow-y-auto relative">
+        <div class="p-4 space-y-4">
+            <div>
+                <h2 id="problemTitle" class="font-['Space_Grotesk'] text-sm tracking-widest text-[#00f0ff] uppercase glow-cyan mb-2"></h2>
+                <p id="problemDescription" class="text-[10px] font-['IBM_Plex_Mono'] text-[#b9cacb] leading-relaxed"></p>
+            </div>
+            <div>
+                <h4 class="font-['IBM_Plex_Mono'] text-[9px] text-outline uppercase tracking-[2px] mb-2 border-b border-[#3b494b]/50 pb-1">Objectives</h4>
+                <div id="problemObjectives" class="space-y-1"></div>
+            </div>
+            <div id="problemQuestions" class="space-y-4 pt-2 border-t border-[#3b494b]/50">
+            </div>
+            <div id="completionBanner" class="hidden p-4 bg-green-500/10 border border-green-500/30 text-center animate-[fade-in-up_0.5s_ease-out]">
+                <span class="material-symbols-outlined text-green-400 text-3xl mb-2">emoji_events</span>
+                <h4 class="font-['IBM_Plex_Mono'] text-xs text-green-400 font-bold uppercase tracking-widest">Challenge Complete!</h4>
+            </div>
+        </div>
+    </div>
+    <div id="problemActions" class="hidden mt-auto border-t border-[#1A1D24] bg-surface-container-lowest">
+        <div class="h-1 bg-[#1A1D24] w-full">
+            <div id="progressBar" class="h-full bg-[#00f0ff] transition-all duration-500 w-0 shadow-[0_0_8px_rgba(0,240,255,0.4)]"></div>
+        </div>
+        <div class="p-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="text-[9px] font-['IBM_Plex_Mono'] text-outline tracking-widest uppercase">Progress</span>
+                <span id="progressText" class="text-[10px] font-['IBM_Plex_Mono'] text-[#00f0ff] font-bold">0/0</span>
+            </div>
+            <div class="flex gap-2">
+                <button id="resetProblemBtn" title="Reset Scenario" class="w-8 h-8 flex items-center justify-center border border-[#3b494b] text-[#849495] hover:text-[#ffc832] hover:border-[#ffc832] transition-colors">
+                    <span class="material-symbols-outlined text-[14px]">refresh</span>
+                </button>
+                <button id="exitProblemBtn" title="Exit Challenge" class="text-[9px] font-['IBM_Plex_Mono'] px-3 py-1.5 border border-[#3b494b] text-[#849495] hover:text-error hover:border-error transition-colors tracking-widest">
+                    EXIT
+                </button>
+            </div>
+        </div>
+    </div>
+</aside>
+<button id="rightToggleBtn" class="sidebar-toggle-btn">
+    <span class="material-symbols-outlined text-[16px] transition-transform duration-300" id="rightToggleIcon">chevron_right</span>
+</button>
 </div>
 
 <!-- Welcome Modal -->
@@ -497,6 +608,47 @@
 <!-- Load simulation logic -->
 <script src="simLogic.js"></script>
 <script>
+    if (typeof ProblemManager !== 'undefined') {
+        ProblemManager.init();
+    }
+
+    const leftSidebar = document.getElementById('leftSidebar');
+    const leftToggleBtn = document.getElementById('leftToggleBtn');
+    const leftToggleIcon = document.getElementById('leftToggleIcon');
+    
+    // Default right sidebar to collapsed initially
+    const rightSidebar = document.getElementById('rightSidebar');
+    const rightToggleBtn = document.getElementById('rightToggleBtn');
+    const rightToggleIcon = document.getElementById('rightToggleIcon');
+    if (rightSidebar) rightSidebar.classList.add('collapsed');
+
+    let isResizing = false;
+    function triggerContinuousResize() {
+        if(isResizing) return;
+        isResizing = true;
+        let start = Date.now();
+        let timer = setInterval(() => {
+            if (typeof resizeCanvas === 'function') resizeCanvas();
+            if(Date.now() - start > 350) { clearInterval(timer); isResizing = false; if (typeof resizeCanvas === 'function') resizeCanvas(); }
+        }, 16);
+    }
+
+    if (leftToggleBtn) {
+        leftToggleBtn.addEventListener('click', () => {
+            leftSidebar.classList.toggle('collapsed');
+            leftToggleIcon.textContent = leftSidebar.classList.contains('collapsed') ? 'chevron_right' : 'chevron_left';
+            triggerContinuousResize();
+        });
+    }
+
+    if (rightToggleBtn) {
+        rightToggleBtn.addEventListener('click', () => {
+            rightSidebar.classList.toggle('collapsed');
+            rightToggleIcon.textContent = rightSidebar.classList.contains('collapsed') ? 'chevron_left' : 'chevron_right';
+            triggerContinuousResize();
+        });
+    }
+
     // Patch resizeCanvas for sidebar layout
     const _origResize = resizeCanvas;
     window.removeEventListener('resize', _origResize);
