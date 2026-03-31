@@ -1864,7 +1864,10 @@
                 if (m.type === 'flat') {
                     ctx.moveTo(m.x1, m.y1); ctx.lineTo(m.x2, m.y2);
                 } else if (m.type === 'arc') {
-                    ctx.arc(m.cx, m.cy, m.r, m.a1, m.a2, (m.a2<m.a1 && m.a2-m.a1 > -Math.PI) ? true : false);
+                    let diff = m.a2 - m.a1;
+                    while (diff > Math.PI) diff -= 2 * Math.PI;
+                    while (diff < -Math.PI) diff += 2 * Math.PI;
+                    ctx.arc(m.cx, m.cy, m.r, m.a1, m.a2, diff < 0);
                     // Draw F focal point
                     let midAng = getArcMidAng(m);
                     const fx = m.cx + Math.cos(midAng) * (m.r / 2);
