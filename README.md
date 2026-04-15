@@ -46,13 +46,26 @@ OpticSpace rejects soft consumer aesthetics in favor of a mission-critical lab e
 - A modern web browser (Chrome, Firefox, or Edge recommended).
 - **Zero installation required.**
 
+### Project Structure
+```
+├── assets/             # Raw design exports (Stitch) and resources
+│   └── stitch_source/
+├── docs/               # Technical and design documentation
+├── src/                # Source logic and initial versions
+│   ├── simLogic.js
+│   └── index_v1.html
+├── index.html          # Main entry point (Modernized v2)
+├── build.py            # Build automation script
+└── README.md           # Project overview
+```
+
 ### Usage
 1. Clone the repository:
    ```bash
    git clone https://github.com/arjeldru-dev/physics-simulator.git
    ```
-2. Open `index_v2.html` in your browser to access the full modernized suite.
-3. For the simplified "Mirror Room" experience, open `index.html`.
+2. Open `index.html` in your browser to access the full modernized suite.
+3. For the initial "Mirror Room" experience, open `src/index_v1.html`.
 
 ### Controls
 | Input | Action |
