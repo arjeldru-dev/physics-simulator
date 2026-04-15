@@ -1,6 +1,6 @@
 import re
 
-with open(r'd:\P6 SIMULATOR APP\simLogic.js', 'r', encoding='utf-8') as f:
+with open(r'd:\P6 SIMULATOR APP\src\simLogic.js', 'r', encoding='utf-8') as f:
     js = f.read()
 
 # Fix resizing
