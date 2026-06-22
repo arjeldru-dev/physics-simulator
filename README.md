@@ -93,9 +93,4 @@ python build.py
 ```
 
 ---
-
-## 📜 License
-Distributed under the MIT License. See `LICENSE` for more information (if applicable).
-
----
 *Created with focus on clarity, precision, and the beauty of physics.*
